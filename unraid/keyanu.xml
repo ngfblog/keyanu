@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>keyanu</Name>
+  <Repository>nirgf/keyanu:latest</Repository>
+  <Registry>https://hub.docker.com/r/nirgf/keyanu</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/your-org/keyanu</Support>
+  <Project>https://github.com/your-org/keyanu</Project>
+  <Overview>
+Keyanu — a self-hosted infrastructure credential manager for homelabs and
+system administrators, built for pfSense, Unraid, MikroTik, Home Assistant,
+Cloudflare, GitHub, and anything else you manage credentials for.
+
+This single container includes the web UI, the API, and the database engine
+-- there is nothing else to install and no separate containers or custom
+Docker networks to configure. All settings below are plain environment
+variables, editable any time from this container's Edit screen.
+
+On first boot, an admin account is created from ADMIN_USERNAME /
+ADMIN_PASSWORD. You will be required to set a new password on first login.
+  </Overview>
+  <Category>Tools: Utilities: Security</Category>
+  <WebUI>http://[IP]:[PORT:8420]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/your-org/keyanu/main/unraid/icon.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="WebUI Port" Target="8420" Default="8420" Mode="tcp" Description="Port the Keyanu web UI (and API) is served on" Type="Port" Display="always" Required="true" Mask="false">8420</Config>
+
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/keyanu" Mode="rw" Description="Stores the SQLite database and uploaded files. Back up this folder." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/keyanu</Config>
+
+  <Config Name="SECRET_KEY" Target="SECRET_KEY" Default="" Mode="" Description="Signs session tokens. Generate with: openssl rand -hex 32" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="ENCRYPTION_KEY" Target="ENCRYPTION_KEY" Default="" Mode="" Description="Encrypts credential and TOTP secrets at rest. Generate with: openssl rand -hex 32. NEVER change this once data exists -- doing so makes stored credentials permanently unreadable. Back it up separately from Unraid's appdata backups." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="ADMIN_USERNAME" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Username for the initial (single) user account" Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
+
+  <Config Name="ADMIN_PASSWORD" Target="ADMIN_PASSWORD" Default="" Mode="" Description="Temporary password for the initial admin account -- you will be forced to change it on first login" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="DATA_DIR" Target="DATA_DIR" Default="/data" Mode="" Description="Internal container path for the database and files. Must match the container-side path of the Appdata volume above. Leave as /data unless you changed that too." Type="Variable" Display="advanced" Required="true" Mask="false">/data</Config>
+
+  <Config Name="DEFAULT_SESSION_TIMEOUT_MINUTES" Target="DEFAULT_SESSION_TIMEOUT_MINUTES" Default="720" Mode="" Description="Idle session timeout in minutes applied to the admin account on first boot (720 = 12 hours). Changeable later per-account under Settings > Security." Type="Variable" Display="advanced" Required="true" Mask="false">720</Config>
+
+  <Config Name="ENVIRONMENT" Target="ENVIRONMENT" Default="production" Mode="" Description="Deployment environment label" Type="Variable" Display="advanced" Required="true" Mask="false">production</Config>
+</Container>

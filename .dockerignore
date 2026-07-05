@@ -1,0 +1,30 @@
+# Version control / docs
+.git
+.github
+*.md
+LICENSE
+
+# Frontend build artifacts (rebuilt fresh inside the image)
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+# Backend runtime/dev artifacts
+backend/__pycache__
+backend/**/__pycache__
+backend/.venv
+backend/venv
+backend/.env
+backend/data
+backend/*.db
+backend/.pytest_cache
+backend/tests
+
+# Per-service Dockerfiles/compose are only used for local dev, not the
+# single-image build
+docker-compose.yaml
+
+# OS / editor
+.DS_Store
+.vscode
+.idea

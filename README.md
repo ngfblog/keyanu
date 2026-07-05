@@ -6,9 +6,11 @@ MikroTik, Home Assistant, Cloudflare tunnels, and a dozen other systems, and
 are tired of secrets scattered across notes apps, spreadsheets, and browser
 password managers.
 
-> **Status:** Sprint 1 — project scaffold, auth, workspaces, resources, and
-> a fully working credentials/files/notes/audit experience for a single
-> user. See [Roadmap](#roadmap) below.
+> **Status:** Actively developed. Auth, workspaces/systems/credentials/
+> files/notes, encrypted secrets, sessions with TOTP + recovery codes,
+> encrypted backup/restore, a permanent-URL credential page, and global
+> search are all implemented and tested. See [ROADMAP.md](ROADMAP.md) for
+> what's next.
 
 ## Concept
 
@@ -46,93 +48,119 @@ shadcn/ui-style primitives (`class-variance-authority`, `clsx`,
 secrets encrypted at rest (Fernet, key derived from `ENCRYPTION_KEY`) and a
 single-user JWT auth flow.
 
-## Quick start (Docker Compose)
+## Quick start (Docker Hub image)
 
-No `.env` file is required. Pass configuration as real environment
-variables — to your shell, to `docker run`, or via your orchestrator's
-env/secrets mechanism:
+Keyanu is distributed as a single Docker image containing the frontend,
+the backend, and the database engine. One container, one port, one
+volume — no `.env` file, no Docker Compose, no custom network required.
 
 ```bash
-git clone https://github.com/your-org/keyanu.git
-cd keyanu
+docker volume create keyanu-data
 
-export SECRET_KEY=$(openssl rand -hex 32)
-export ENCRYPTION_KEY=$(openssl rand -hex 32)
-export ADMIN_USERNAME=admin
-export ADMIN_PASSWORD=change-me-please
-
-docker compose up -d --build
+docker run -d \
+  --name keyanu \
+  -p 8420:8420 \
+  -v keyanu-data:/data \
+  -e SECRET_KEY=$(openssl rand -hex 32) \
+  -e ENCRYPTION_KEY=$(openssl rand -hex 32) \
+  -e ADMIN_USERNAME=admin \
+  -e ADMIN_PASSWORD=change-me-please \
+  -e DATA_DIR=/data \
+  -e DEFAULT_SESSION_TIMEOUT_MINUTES=720 \
+  -e ENVIRONMENT=production \
+  --restart unless-stopped \
+  nirgf/keyanu:latest
 ```
 
-Open `http://localhost:8420` and sign in with the admin credentials you
-set. You'll be required to choose a new password on first login.
+Open `http://localhost:8420` and sign in with `ADMIN_USERNAME` /
+`ADMIN_PASSWORD`. You'll be required to choose a new password immediately
+on first login.
 
-If you'd rather not export variables into your shell every time, `docker
-compose` also reads a `.env` file placed next to `docker-compose.yaml` at
-the repo root (this is a Compose convention, unrelated to
-`backend/.env.example` — see the note below). Create one with the same
-variable names and skip the `export` lines above.
+### Generating `SECRET_KEY` and `ENCRYPTION_KEY`
 
-> **Two different `.env` files, don't mix them up:**
-> - `backend/.env` — read by the Python app itself, only when you run
->   `uvicorn` directly on your own machine (see "Running for local
->   development" below). Copy it from `backend/.env.example`.
-> - A `.env` at the **repo root** (next to `docker-compose.yaml`) — read
->   by `docker compose` for variable substitution in that file. Optional;
->   only relevant if you're using Docker Compose and prefer a file over
->   exporting shell variables.
->
-> Neither is required for Unraid — see below.
+Both must be random 32-byte hex strings. Generate each one separately —
+don't reuse the same value for both:
+
+```bash
+openssl rand -hex 32   # SECRET_KEY
+openssl rand -hex 32   # ENCRYPTION_KEY
+```
+
+> **⚠️ Never change `ENCRYPTION_KEY` after data exists.** It encrypts
+> every credential secret, TOTP secret, and backup export at rest. If you
+> lose it, that data is permanently unrecoverable — there is no reset or
+> recovery path. If you change it after credentials already exist, those
+> credentials become permanently unreadable. Store it somewhere durable
+> and separate from your appdata backups (a password manager, printed and
+> locked away, etc.) the moment you generate it.
+
+### All configuration is environment variables
+
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| `SECRET_KEY` | ✅ | — | Signs session tokens |
+| `ENCRYPTION_KEY` | ✅ | — | Encrypts secrets at rest — see warning above |
+| `ADMIN_USERNAME` | ✅ | — | Login username for the single admin account |
+| `ADMIN_PASSWORD` | ✅ | — | Temporary password, forced change on first login |
+| `DATA_DIR` | ✅ | `/data` | Internal path for the database and files — leave as `/data` unless you also change the volume's container-side mount path |
+| `DEFAULT_SESSION_TIMEOUT_MINUTES` | ✅ | `720` | Idle session timeout (minutes) applied to the admin account on first boot; changeable later per-account under Settings > Security |
+| `ENVIRONMENT` | ✅ | `production` | Deployment environment label |
+
+None of these are read from a file — pass them however your platform
+prefers (`docker run -e`, Unraid's template fields, Portainer's
+environment UI, Kubernetes secrets, etc.).
 
 ## Unraid
 
-Two supported paths, covered in full in [`unraid/README.md`](unraid/README.md):
+One template, one container, no custom Docker network.
 
-**Community Applications style templates (recommended)** — `unraid/keyanu-backend.xml`
-and `unraid/keyanu-frontend.xml` expose every setting as a field in
-Unraid's Docker UI. No file editing, no SSH, no `.env` of any kind.
+1. Copy `unraid/keyanu.xml` into
+   `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server,
+   or add this repo as a template repository under **Docker → Add
+   Container → Template repositories**.
+2. In Unraid, go to **Apps** (or **Docker → Add Container**) and search
+   for "keyanu". The template pulls `nirgf/keyanu:latest` directly from
+   Docker Hub — nothing to build.
+3. Fill in the fields directly in the Unraid UI (all seven map to the
+   environment variables in the table above):
 
-1. Build the two images (or push them to your own registry and point the
-   templates at it):
-   ```bash
-   docker build -t keyanu-backend:latest ./backend
-   docker build -t keyanu-frontend:latest ./frontend
-   ```
-2. Copy `unraid/keyanu-backend.xml` and `unraid/keyanu-frontend.xml` into
-   `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server
-   (or add this repo as a template repository under **Docker → Add
-   Container → Template repositories**).
-3. Create a custom Docker network so the two containers can reach each
-   other by name:
-   ```bash
-   docker network create keyanu
-   ```
-4. In Unraid, go to **Apps** (or **Docker → Add Container**) and add
-   `keyanu-backend` first. Fill in the required fields directly in the
-   Unraid UI:
+   | Field | Required |
+   |---|---|
+   | `SECRET_KEY` | ✅ |
+   | `ENCRYPTION_KEY` | ✅ |
+   | `ADMIN_USERNAME` | ✅ |
+   | `ADMIN_PASSWORD` | ✅ |
+   | `DATA_DIR` | ✅ (leave as `/data`) |
+   | `DEFAULT_SESSION_TIMEOUT_MINUTES` | ✅ (default `720`) |
+   | `ENVIRONMENT` | ✅ (leave as `production`) |
 
-   | Field | Required | Notes |
-   |---|---|---|
-   | `SECRET_KEY` | ✅ | Generate with `openssl rand -hex 32` |
-   | `ENCRYPTION_KEY` | ✅ | Generate with `openssl rand -hex 32`. Back this up — losing it makes stored credentials unrecoverable |
-   | `ADMIN_USERNAME` | ✅ | Login username for the single admin account |
-   | `ADMIN_PASSWORD` | ✅ | Temporary password — you'll be forced to change it on first login |
-   | `DATA_DIR` | ✅ | Leave as `/data` unless you also change the App Data volume's container path |
-   | `DEFAULT_SESSION_TIMEOUT_MINUTES` | ✅ | Idle session timeout for the admin account at first boot (default `720` = 12h); changeable later in-app |
-   | `ENVIRONMENT` | ✅ | Leave as `production` |
+   Also confirm the **Appdata** path — defaults to
+   `/mnt/user/appdata/keyanu` → `/data` inside the container.
+4. Apply, then open `http://<unraid-ip>:8420/` and sign in.
 
-   Set the network to `keyanu` in the container's advanced view, and set
-   the App Data path (e.g. `/mnt/user/appdata/keyanu`).
-5. Add `keyanu-frontend` the same way, on the same `keyanu` network, with
-   its own WebUI port.
-6. Open `http://<unraid-ip>:<frontend-port>/` and sign in.
+That's the entire installation. No building on Unraid, no second
+container, no custom network, no separate frontend/backend templates.
 
-**Docker Compose via the Compose Manager plugin** — if you'd rather run
-the provided `docker-compose.yaml` as-is, see Option A in
-[`unraid/README.md`](unraid/README.md). This path does use a `.env` file
-(a Compose convention, not something the app requires), which is why the
-templates above are the recommended path if you want to avoid file editing
-entirely.
+See [`unraid/README.md`](unraid/README.md) for troubleshooting and backup
+notes.
+
+## Publishing to Docker Hub
+
+For maintainers building and pushing new images:
+
+```bash
+# From the repo root -- the Dockerfile here builds the frontend AND the
+# backend into one image, so the build context must be the repo root,
+# not backend/ or frontend/.
+docker build -t nirgf/keyanu:latest .
+
+# Tag a version alongside `latest` (recommended for anything but a quick test)
+docker tag nirgf/keyanu:latest nirgf/keyanu:0.1.0
+
+docker login
+docker push nirgf/keyanu:latest
+docker push nirgf/keyanu:0.1.0
+```
 
 ## Running for local development (without Docker)
 
@@ -180,34 +208,38 @@ path), and search.
 
 ```
 keyanu/
-├── backend/                 FastAPI application
+├── Dockerfile                 Single-image production build (frontend + backend + nginx)
+├── nginx.conf                 Combined nginx config for the single-image build (port 8420)
+├── docker-entrypoint.sh       Single-image entrypoint (migrate, start backend + nginx)
+├── .dockerignore              Build context excludes for the single-image build
+├── docker-compose.yaml        Two-container setup for LOCAL DEVELOPMENT only
+├── backend/                   FastAPI application
 │   ├── app/
-│   │   ├── api/routes/      HTTP endpoints (incl. security, backup, search)
-│   │   ├── core/            config, security/session/TOTP, backup packaging,
-│   │   │                    credential template definitions
-│   │   ├── crud/            database access layer
-│   │   ├── db/              SQLAlchemy engine/session/base
-│   │   ├── models/          ORM models
-│   │   ├── schemas/         Pydantic request/response models
-│   │   └── main.py          app entrypoint
-│   ├── alembic/             database migrations
-│   ├── tests/                pytest suite (auth, security, backup, search, ...)
-│   ├── Dockerfile
+│   │   ├── api/routes/        HTTP endpoints (incl. security, backup, search)
+│   │   ├── core/               config, security/session/TOTP, backup packaging,
+│   │   │                       credential template definitions
+│   │   ├── crud/               database access layer
+│   │   ├── db/                 SQLAlchemy engine/session/base
+│   │   ├── models/              ORM models
+│   │   ├── schemas/             Pydantic request/response models
+│   │   └── main.py               app entrypoint
+│   ├── alembic/                database migrations
+│   ├── tests/                  pytest suite (auth, security, backup, search, ...)
+│   ├── Dockerfile               standalone backend image, used only by docker-compose.yaml (dev)
 │   └── requirements.txt
-├── frontend/                 React application
+├── frontend/                   React application
 │   ├── src/
-│   │   ├── components/       ui/, layout/, resources/, credentials/,
-│   │   │                     settings/, search/, common/
-│   │   ├── pages/             route-level pages (incl. settings/)
-│   │   ├── lib/                api client, icon maps, cn() helper
-│   │   ├── store/              auth + preferences contexts
-│   │   └── types/               shared TypeScript types
-│   ├── Dockerfile
-│   └── nginx.conf
-├── unraid/                    Unraid deployment templates + guide
+│   │   ├── components/          ui/, layout/, resources/, credentials/,
+│   │   │                        settings/, search/, common/
+│   │   ├── pages/                route-level pages (incl. settings/)
+│   │   ├── lib/                   api client, icon maps, cn() helper
+│   │   ├── store/                 auth + preferences contexts
+│   │   └── types/                  shared TypeScript types
+│   ├── Dockerfile                standalone frontend image, used only by docker-compose.yaml (dev)
+│   └── nginx.conf                 nginx config for the standalone dev frontend image
+├── unraid/                      keyanu.xml template + deployment guide
 ├── CHANGELOG.md
-├── ROADMAP.md
-└── docker-compose.yaml
+└── ROADMAP.md
 ```
 
 ## Security model (v1)

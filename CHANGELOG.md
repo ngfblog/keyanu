@@ -4,6 +4,47 @@ All notable changes to Keyanu are documented in this file.
 
 ## Unreleased
 
+### Changed — Deployment architecture: single Docker image
+
+Production deployment is now **one container, one image, one port**,
+replacing the two-container (backend + frontend) production setup from the
+previous change below.
+
+- New root-level `Dockerfile` builds the React frontend and the FastAPI
+  backend together into a single image (`nirgf/keyanu:latest`): nginx
+  serves the built frontend and reverse-proxies `/api/` to the backend
+  process, which runs on `127.0.0.1:8000` inside the same container and is
+  never exposed directly. One published port (`8420`), one volume
+  (`/data`).
+- New `docker-entrypoint.sh` (repo root) runs migrations, starts the
+  backend, then starts nginx in the foreground; if either process exits,
+  the other is stopped too so the container exits cleanly and a restart
+  policy can recover it. Verified by killing the backend process mid-run
+  and confirming nginx shuts down with it, rather than serving a
+  half-broken app.
+- New single Unraid template, `unraid/keyanu.xml`, replacing the previous
+  two-template (`keyanu-backend.xml` + `keyanu-frontend.xml`) setup.
+  Exposes all 7 required settings (`SECRET_KEY`, `ENCRYPTION_KEY`,
+  `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `DATA_DIR`,
+  `DEFAULT_SESSION_TIMEOUT_MINUTES`, `ENVIRONMENT`) as environment
+  variable fields. No custom Docker network required — there's only one
+  container.
+- The previous two-container `docker-compose.yaml` (separate backend/
+  frontend images) is kept, explicitly re-scoped as a local-development
+  convenience (live rebuilds, two containers) and no longer presented as
+  a production path.
+- README rewritten: Docker Hub install (`docker run`), Unraid install,
+  secret generation, an `ENCRYPTION_KEY` warning, and `docker build` /
+  `docker tag` / `docker push` instructions for publishing new images.
+- Verified end-to-end against the actual single-image process layout (not
+  just the previous two-container setup): built the real frontend,
+  installed nginx, ran the unmodified `docker-entrypoint.sh` at the exact
+  paths the image uses (`/app/backend`, `/usr/share/nginx/html`, `/data`),
+  and confirmed through the single port 8420: login, forced password
+  change, settings, workspace/system/credential creation, the credential
+  page endpoint, search, and a full backup export → verify → restore
+  cycle.
+
 ### Fixed
 - `DEFAULT_SESSION_TIMEOUT_MINUTES` was defined in `Settings` but never
   actually read anywhere — new users (including the bootstrap admin) always
