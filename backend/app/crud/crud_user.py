@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import hash_password, verify_password
 from app.models.user import User
 
@@ -26,6 +27,7 @@ def create_user(
         hashed_password=hash_password(password),
         display_name=display_name,
         must_change_password=must_change_password,
+        session_timeout_minutes=settings.DEFAULT_SESSION_TIMEOUT_MINUTES,
     )
     db.add(user)
     db.commit()

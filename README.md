@@ -48,21 +48,91 @@ single-user JWT auth flow.
 
 ## Quick start (Docker Compose)
 
+No `.env` file is required. Pass configuration as real environment
+variables — to your shell, to `docker run`, or via your orchestrator's
+env/secrets mechanism:
+
 ```bash
 git clone https://github.com/your-org/keyanu.git
 cd keyanu
-cp backend/.env.example .env
-# edit .env: set SECRET_KEY, ENCRYPTION_KEY, ADMIN_USERNAME, ADMIN_PASSWORD
+
+export SECRET_KEY=$(openssl rand -hex 32)
+export ENCRYPTION_KEY=$(openssl rand -hex 32)
+export ADMIN_USERNAME=admin
+export ADMIN_PASSWORD=change-me-please
+
 docker compose up -d --build
 ```
 
-Open `http://localhost:8420` and sign in with the admin credentials you set.
+Open `http://localhost:8420` and sign in with the admin credentials you
+set. You'll be required to choose a new password on first login.
 
-Generate strong secrets with:
+If you'd rather not export variables into your shell every time, `docker
+compose` also reads a `.env` file placed next to `docker-compose.yaml` at
+the repo root (this is a Compose convention, unrelated to
+`backend/.env.example` — see the note below). Create one with the same
+variable names and skip the `export` lines above.
 
-```bash
-openssl rand -hex 32
-```
+> **Two different `.env` files, don't mix them up:**
+> - `backend/.env` — read by the Python app itself, only when you run
+>   `uvicorn` directly on your own machine (see "Running for local
+>   development" below). Copy it from `backend/.env.example`.
+> - A `.env` at the **repo root** (next to `docker-compose.yaml`) — read
+>   by `docker compose` for variable substitution in that file. Optional;
+>   only relevant if you're using Docker Compose and prefer a file over
+>   exporting shell variables.
+>
+> Neither is required for Unraid — see below.
+
+## Unraid
+
+Two supported paths, covered in full in [`unraid/README.md`](unraid/README.md):
+
+**Community Applications style templates (recommended)** — `unraid/keyanu-backend.xml`
+and `unraid/keyanu-frontend.xml` expose every setting as a field in
+Unraid's Docker UI. No file editing, no SSH, no `.env` of any kind.
+
+1. Build the two images (or push them to your own registry and point the
+   templates at it):
+   ```bash
+   docker build -t keyanu-backend:latest ./backend
+   docker build -t keyanu-frontend:latest ./frontend
+   ```
+2. Copy `unraid/keyanu-backend.xml` and `unraid/keyanu-frontend.xml` into
+   `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server
+   (or add this repo as a template repository under **Docker → Add
+   Container → Template repositories**).
+3. Create a custom Docker network so the two containers can reach each
+   other by name:
+   ```bash
+   docker network create keyanu
+   ```
+4. In Unraid, go to **Apps** (or **Docker → Add Container**) and add
+   `keyanu-backend` first. Fill in the required fields directly in the
+   Unraid UI:
+
+   | Field | Required | Notes |
+   |---|---|---|
+   | `SECRET_KEY` | ✅ | Generate with `openssl rand -hex 32` |
+   | `ENCRYPTION_KEY` | ✅ | Generate with `openssl rand -hex 32`. Back this up — losing it makes stored credentials unrecoverable |
+   | `ADMIN_USERNAME` | ✅ | Login username for the single admin account |
+   | `ADMIN_PASSWORD` | ✅ | Temporary password — you'll be forced to change it on first login |
+   | `DATA_DIR` | ✅ | Leave as `/data` unless you also change the App Data volume's container path |
+   | `DEFAULT_SESSION_TIMEOUT_MINUTES` | ✅ | Idle session timeout for the admin account at first boot (default `720` = 12h); changeable later in-app |
+   | `ENVIRONMENT` | ✅ | Leave as `production` |
+
+   Set the network to `keyanu` in the container's advanced view, and set
+   the App Data path (e.g. `/mnt/user/appdata/keyanu`).
+5. Add `keyanu-frontend` the same way, on the same `keyanu` network, with
+   its own WebUI port.
+6. Open `http://<unraid-ip>:<frontend-port>/` and sign in.
+
+**Docker Compose via the Compose Manager plugin** — if you'd rather run
+the provided `docker-compose.yaml` as-is, see Option A in
+[`unraid/README.md`](unraid/README.md). This path does use a `.env` file
+(a Compose convention, not something the app requires), which is why the
+templates above are the recommended path if you want to avoid file editing
+entirely.
 
 ## Running for local development (without Docker)
 

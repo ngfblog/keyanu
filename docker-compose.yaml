@@ -11,8 +11,9 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me-please-this-is-not-secure-for-production-use}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me-please}
-      DATA_DIR: /data
-      ENVIRONMENT: production
+      DATA_DIR: ${DATA_DIR:-/data}
+      DEFAULT_SESSION_TIMEOUT_MINUTES: ${DEFAULT_SESSION_TIMEOUT_MINUTES:-720}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
     volumes:
       - keyanu-data:/data
     healthcheck:

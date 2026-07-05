@@ -2,6 +2,33 @@
 
 All notable changes to Keyanu are documented in this file.
 
+## Unreleased
+
+### Fixed
+- `DEFAULT_SESSION_TIMEOUT_MINUTES` was defined in `Settings` but never
+  actually read anywhere — new users (including the bootstrap admin) always
+  got a hardcoded 720-minute timeout regardless of this setting. Wired it
+  into `crud_user.create_user`; added a regression test
+  (`test_00_config_wiring.py`) so a config value silently doing nothing
+  can't happen again unnoticed.
+
+### Changed
+- Production deployment no longer requires editing a `.env` file anywhere.
+  - Unraid templates (`unraid/keyanu-backend.xml`) now expose all seven
+    required settings (`SECRET_KEY`, `ENCRYPTION_KEY`, `ADMIN_USERNAME`,
+    `ADMIN_PASSWORD`, `DATA_DIR`, `DEFAULT_SESSION_TIMEOUT_MINUTES`,
+    `ENVIRONMENT`) as Docker environment variable fields, editable directly
+    in Unraid's UI.
+  - `docker-compose.yaml` now honors all seven as plain environment
+    variables with sensible defaults (`${VAR:-default}`), so they can be
+    set via an exported shell environment or `docker run -e` instead of a
+    file.
+  - `backend/.env.example` is now explicitly documented as local-development-only
+    (used only when running `uvicorn` directly, outside Docker).
+  - README rewritten: a dedicated **Unraid** section with a full field
+    table, and a clarified Quick Start that no longer instructs copying
+    `.env.example` for Docker Compose use.
+
 ## Sprint 2 — Security, Backup & Restore, Credential Page, Global Search
 
 ### Added
