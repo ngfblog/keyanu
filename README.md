@@ -123,16 +123,29 @@ keyanu/
 ## Security model (v1)
 
 - Single user, bootstrapped from `ADMIN_USERNAME` / `ADMIN_PASSWORD` on
-  first boot.
-- Passwords hashed with bcrypt; sessions are JWTs signed with `SECRET_KEY`.
+  first boot with `must_change_password=true` — you're required to set a
+  new password on first login before anything else is usable.
+- Passwords hashed with bcrypt. Sessions are server-side (`sessions` table);
+  the JWT handed to the browser only carries a session id, never the
+  username or any claims of its own. Every request re-validates the session
+  in the database and slides its idle timeout forward.
+- Optional TOTP two-factor authentication (Settings > Security), with
+  single-use, bcrypt-hashed recovery codes for when you lose your
+  authenticator. Login becomes a two-step flow when TOTP is enabled.
+- "Log out everywhere" and per-session revocation are real: they delete the
+  server-side session, not just the local token.
+- Session idle timeout is configurable per-account (5 minutes to 30 days).
+- Changing your password, changing your username, disabling TOTP, and
+  generating recovery codes all require re-entering your current password.
 - Every credential's sensitive fields are serialized to JSON and encrypted
   with Fernet (AES-128-CBC + HMAC) using a key derived from
-  `ENCRYPTION_KEY`, before ever touching disk.
+  `ENCRYPTION_KEY`, before ever touching disk. TOTP secrets are encrypted
+  the same way.
 - Every create/update/delete/secret-reveal is written to an audit log,
   visible per-resource under the "Audit & History" tab.
-- **`ENCRYPTION_KEY` must never change once credentials exist** — doing so
-  makes existing secrets permanently unreadable. Back it up outside of
-  Unraid appdata backups.
+- **`ENCRYPTION_KEY` must never change once credentials or TOTP secrets
+  exist** — doing so makes them permanently unreadable. Back it up outside
+  of Unraid appdata backups.
 
 This is a single-user tool in v1: there is no role-based access control or
 per-credential sharing yet. Don't expose it directly to the internet;
@@ -141,7 +154,7 @@ auth layer if remote access is needed.
 
 ## Roadmap
 
-Sprint 1 (this release):
+Sprint 1:
 - [x] Project structure, Docker, docker-compose, Unraid templates
 - [x] FastAPI backend shell with auth, workspaces, resources
 - [x] React frontend shell with dark theme, sidebar, dashboard
@@ -152,14 +165,22 @@ Sprint 1 (this release):
 - [x] Working Notes tab
 - [x] Working Audit & History tab
 
+Sprint 2 (in progress):
+- [x] Settings shell + General & Appearance preferences
+- [x] Security: server-side sessions, forced password change, TOTP,
+      recovery codes, active sessions, session timeout
+- [ ] Backup & Restore (`.keyanu` encrypted export/import)
+- [ ] Global search (Ctrl+K)
+- [ ] Dedicated Credential page (own URL, out of the modal)
+- [ ] Infrastructure-oriented sidebar (Workspace → Category → System)
+
 Planned for future sprints:
 - [ ] Automatic metadata extraction from uploaded files (cert expiry, SSH
       key type/fingerprint detection, etc.)
 - [ ] Multi-user support with roles and per-workspace sharing
 - [ ] Credential expiry reminders and TOTP live code generation
-- [ ] Search across workspaces/resources/credentials
-- [ ] Import/export (encrypted backup bundle)
-- [ ] Two-factor authentication for the Keyanu login itself
+- [ ] "Actions" menu (rename/duplicate/export/delete) replacing the bare
+      Delete button
 
 ## License
 
