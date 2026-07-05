@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ChevronRight,
   Pencil,
@@ -42,6 +42,10 @@ export function ResourceDetailPage() {
   const { resourceId } = useParams<{ resourceId: string }>();
   const navigate = useNavigate();
   const { notify } = useToast();
+  const [searchParams] = useSearchParams();
+
+  const highlightFileId = searchParams.get("file");
+  const highlightNoteId = searchParams.get("note");
 
   const [resource, setResource] = useState<ResourceDetailType | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
@@ -49,7 +53,12 @@ export function ResourceDetailPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
   const [templates, setTemplates] = useState<TemplateDefinition[]>([]);
-  const [tab, setTab] = useState<TabId>("overview");
+  const [tab, setTab] = useState<TabId>(
+    (searchParams.get("tab") as TabId) &&
+      ["overview", "credentials", "files", "notes", "audit"].includes(searchParams.get("tab") as string)
+      ? (searchParams.get("tab") as TabId)
+      : "overview"
+  );
   const [loading, setLoading] = useState(true);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -283,11 +292,21 @@ export function ResourceDetailPage() {
           </TabsContent>
 
           <TabsContent value="files">
-            <FilesTab resourceId={resource.id} files={files} onChanged={refreshFiles} />
+            <FilesTab
+              resourceId={resource.id}
+              files={files}
+              onChanged={refreshFiles}
+              highlightId={highlightFileId}
+            />
           </TabsContent>
 
           <TabsContent value="notes">
-            <NotesTab resourceId={resource.id} notes={notes} onChanged={refreshNotes} />
+            <NotesTab
+              resourceId={resource.id}
+              notes={notes}
+              onChanged={refreshNotes}
+              highlightId={highlightNoteId}
+            />
           </TabsContent>
 
           <TabsContent value="audit">

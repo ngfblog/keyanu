@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Plus, StickyNote, Trash2, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
+import { cn } from "@/lib/utils";
 import type { Note } from "@/types";
 
 function NoteEditDialog({
@@ -95,16 +96,25 @@ export function NotesTab({
   resourceId,
   notes,
   onChanged,
+  highlightId,
 }: {
   resourceId: string;
   notes: Note[];
   onChanged: () => void;
+  highlightId?: string | null;
 }) {
   const { notify } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightId, notes]);
 
   function openCreate() {
     setEditingNote(null);
@@ -145,7 +155,11 @@ export function NotesTab({
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {notes.map((note) => (
-            <Card key={note.id} className="flex flex-col gap-2 p-4">
+            <Card
+              key={note.id}
+              ref={note.id === highlightId ? highlightRef : undefined}
+              className={cn("flex flex-col gap-2 p-4", note.id === highlightId && "ring-2 ring-brass")}
+            >
               <div className="flex items-start justify-between gap-2">
                 <h4 className="text-sm font-semibold text-ink">{note.title}</h4>
                 <div className="flex shrink-0 gap-1">

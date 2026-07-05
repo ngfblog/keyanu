@@ -55,6 +55,44 @@ export interface RecoveryCodesStatus {
   generated_at: string | null;
 }
 
+export interface SearchResourceResult {
+  id: string;
+  name: string;
+  type: ResourceType;
+  hostname: string | null;
+  workspace_id: string;
+  workspace_name: string;
+}
+
+export interface SearchCredentialResult {
+  id: string;
+  name: string;
+  template: CredentialTemplateId;
+  resource_id: string;
+  resource_name: string;
+}
+
+export interface SearchFileResult {
+  id: string;
+  filename: string;
+  resource_id: string;
+  resource_name: string;
+}
+
+export interface SearchNoteResult {
+  id: string;
+  title: string;
+  resource_id: string;
+  resource_name: string;
+}
+
+export interface SearchResults {
+  query: string;
+  resources: SearchResourceResult[];
+  credentials: SearchCredentialResult[];
+  files: SearchFileResult[];
+  notes: SearchNoteResult[];
+}
 export interface SessionInfo {
   id: string;
   created_at: string;

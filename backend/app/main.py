@@ -12,6 +12,7 @@ from app.api.routes import (
     meta,
     notes,
     resources,
+    search as search_routes,
     security as security_routes,
     settings as settings_routes,
     workspaces,
@@ -87,3 +88,4 @@ app.include_router(meta.router, prefix=settings.API_V1_PREFIX)
 app.include_router(settings_routes.router, prefix=settings.API_V1_PREFIX)
 app.include_router(security_routes.router, prefix=settings.API_V1_PREFIX)
 app.include_router(backup.router, prefix=settings.API_V1_PREFIX)
+app.include_router(search_routes.router, prefix=settings.API_V1_PREFIX)

@@ -1,16 +1,20 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Menu, LogOut, User as UserIcon, ChevronDown, Settings } from "lucide-react";
+import { Menu, LogOut, User as UserIcon, ChevronDown, Settings, Search } from "lucide-react";
 import { useAuth } from "@/store/auth-context";
 import { cn } from "@/lib/utils";
+
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform ?? navigator.userAgent);
 
 export function Topbar({
   breadcrumb,
   onMenuClick,
+  onSearchClick,
   actions,
 }: {
   breadcrumb: ReactNode;
   onMenuClick: () => void;
+  onSearchClick: () => void;
   actions?: ReactNode;
 }) {
   const { user, logout } = useAuth();
@@ -39,6 +43,17 @@ export function Topbar({
         </button>
         <div className="min-w-0 truncate text-sm text-ink-muted">{breadcrumb}</div>
       </div>
+
+      <button
+        onClick={onSearchClick}
+        className="flex flex-1 items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-ink-faint transition-colors hover:border-brass/40 hover:text-ink-muted sm:max-w-xs"
+      >
+        <Search className="h-3.5 w-3.5 shrink-0" />
+        <span className="flex-1 truncate text-left">Search...</span>
+        <kbd className="hidden shrink-0 rounded border border-border bg-surface-active px-1.5 py-0.5 text-[10px] sm:inline">
+          {isMac ? "⌘K" : "Ctrl+K"}
+        </kbd>
+      </button>
 
       <div className="flex items-center gap-2">
         {actions}

@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { UploadCloud, FileText, Download, Trash2, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/common/empty-state";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Card } from "@/components/ui/card";
 import { api, ApiError, getToken } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
+import { cn } from "@/lib/utils";
 import type { ResourceFileMeta } from "@/types";
 
 function formatBytes(bytes: number): string {
@@ -17,10 +18,12 @@ export function FilesTab({
   resourceId,
   files,
   onChanged,
+  highlightId,
 }: {
   resourceId: string;
   files: ResourceFileMeta[];
   onChanged: () => void;
+  highlightId?: string | null;
 }) {
   const { notify } = useToast();
   const [dragging, setDragging] = useState(false);
@@ -28,6 +31,13 @@ export function FilesTab({
   const [pendingDelete, setPendingDelete] = useState<ResourceFileMeta | null>(null);
   const [deleting, setDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightId, files]);
 
   const uploadFiles = useCallback(
     async (fileList: FileList | File[]) => {
@@ -121,7 +131,14 @@ export function FilesTab({
       ) : (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {files.map((file) => (
-            <Card key={file.id} className="flex items-center gap-3 p-3">
+            <Card
+              key={file.id}
+              ref={file.id === highlightId ? highlightRef : undefined}
+              className={cn(
+                "flex items-center gap-3 p-3 transition-shadow",
+                file.id === highlightId && "ring-2 ring-brass"
+              )}
+            >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-active text-ink-faint">
                 <FileText className="h-4 w-4" />
               </span>

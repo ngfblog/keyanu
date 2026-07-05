@@ -91,32 +91,52 @@ npm run dev
 The dev server proxies `/api` to `http://localhost:8000` (see
 `vite.config.ts`). Open `http://localhost:5173`.
 
+## Running tests
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+The suite spins up the real FastAPI app against an isolated temp SQLite
+database and exercises it end-to-end through HTTP (no mocked internals):
+authentication and sessions, forced password change, TOTP and recovery
+codes, workspace/system/credential CRUD and encryption, files, notes, audit
+trails, backup/restore (including the encryption-key-mismatch rejection
+path), and search.
+
 ## Project structure
 
 ```
 keyanu/
 ├── backend/                 FastAPI application
 │   ├── app/
-│   │   ├── api/routes/      HTTP endpoints
-│   │   ├── core/            config, security, credential template definitions
+│   │   ├── api/routes/      HTTP endpoints (incl. security, backup, search)
+│   │   ├── core/            config, security/session/TOTP, backup packaging,
+│   │   │                    credential template definitions
 │   │   ├── crud/            database access layer
 │   │   ├── db/              SQLAlchemy engine/session/base
 │   │   ├── models/          ORM models
 │   │   ├── schemas/         Pydantic request/response models
 │   │   └── main.py          app entrypoint
 │   ├── alembic/             database migrations
+│   ├── tests/                pytest suite (auth, security, backup, search, ...)
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── frontend/                 React application
 │   ├── src/
-│   │   ├── components/       ui/, layout/, resources/, credentials/, common/
-│   │   ├── pages/             route-level pages
+│   │   ├── components/       ui/, layout/, resources/, credentials/,
+│   │   │                     settings/, search/, common/
+│   │   ├── pages/             route-level pages (incl. settings/)
 │   │   ├── lib/                api client, icon maps, cn() helper
-│   │   ├── store/              auth context
+│   │   ├── store/              auth + preferences contexts
 │   │   └── types/               shared TypeScript types
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── unraid/                    Unraid deployment templates + guide
+├── CHANGELOG.md
+├── ROADMAP.md
 └── docker-compose.yaml
 ```
 
@@ -152,35 +172,16 @@ per-credential sharing yet. Don't expose it directly to the internet;
 put it behind a VPN (Tailscale, WireGuard) or a reverse proxy with its own
 auth layer if remote access is needed.
 
-## Roadmap
+## Roadmap & Changelog
 
-Sprint 1:
-- [x] Project structure, Docker, docker-compose, Unraid templates
-- [x] FastAPI backend shell with auth, workspaces, resources
-- [x] React frontend shell with dark theme, sidebar, dashboard
-- [x] Login page
-- [x] Resource list (cards) and resource detail page with tabs
-- [x] Working Credentials tab (all 9 templates, encrypted at rest)
-- [x] Working Files tab (drag & drop upload/download/delete)
-- [x] Working Notes tab
-- [x] Working Audit & History tab
+Sprints 1 and 2 are complete: full CRUD for workspaces/systems/credentials/
+files/notes, encrypted-at-rest secrets, server-side sessions with TOTP and
+recovery codes, encrypted `.keyanu` backup/restore, a permanent-URL
+Credential page, and Ctrl+K global search.
 
-Sprint 2 (in progress):
-- [x] Settings shell + General & Appearance preferences
-- [x] Security: server-side sessions, forced password change, TOTP,
-      recovery codes, active sessions, session timeout
-- [x] Backup & Restore (`.keyanu` encrypted export/import)
-- [ ] Global search (Ctrl+K)
-- [ ] Dedicated Credential page (own URL, out of the modal)
-- [ ] Infrastructure-oriented sidebar (Workspace → Category → System)
-
-Planned for future sprints:
-- [ ] Automatic metadata extraction from uploaded files (cert expiry, SSH
-      key type/fingerprint detection, etc.)
-- [ ] Multi-user support with roles and per-workspace sharing
-- [ ] Credential expiry reminders and TOTP live code generation
-- [ ] "Actions" menu (rename/duplicate/export/delete) replacing the bare
-      Delete button
+See [ROADMAP.md](ROADMAP.md) for what's planned next, and
+[CHANGELOG.md](CHANGELOG.md) for a detailed record of everything shipped
+so far.
 
 ## License
 

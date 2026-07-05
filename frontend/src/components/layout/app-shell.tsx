@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceDialog } from "@/components/layout/workspace-dialog";
+import { CommandPalette } from "@/components/search/command-palette";
 import { api } from "@/lib/api";
 import type { Workspace } from "@/types";
 
@@ -18,6 +19,7 @@ export function AppShell() {
   const [loaded, setLoaded] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const refreshWorkspaces = useCallback(async () => {
     const data = await api.get<Workspace[]>("/workspaces");
@@ -28,6 +30,17 @@ export function AppShell() {
   useEffect(() => {
     refreshWorkspaces();
   }, [refreshWorkspaces]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const location = useLocation();
   const breadcrumbLabel = breadcrumbForPath(location.pathname);
@@ -56,7 +69,11 @@ export function AppShell() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar breadcrumb={breadcrumbLabel} onMenuClick={() => setMobileNavOpen(true)} />
+        <Topbar
+          breadcrumb={breadcrumbLabel}
+          onMenuClick={() => setMobileNavOpen(true)}
+          onSearchClick={() => setSearchOpen(true)}
+        />
         <main className="flex-1 overflow-y-auto">
           {loaded && <Outlet context={{ workspaces, refreshWorkspaces }} />}
         </main>
@@ -67,6 +84,8 @@ export function AppShell() {
         onClose={() => setWorkspaceDialogOpen(false)}
         onSaved={() => refreshWorkspaces()}
       />
+
+      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
