@@ -28,6 +28,12 @@ class CredentialRead(BaseModel):
     updated_at: datetime
 
 
+class CredentialDetail(CredentialRead):
+    resource_name: str | None = None
+    workspace_id: str | None = None
+    workspace_name: str | None = None
+
+
 class CredentialRevealResponse(BaseModel):
     id: str
     fields: dict[str, str]

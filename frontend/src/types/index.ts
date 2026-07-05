@@ -142,6 +142,12 @@ export interface Credential {
   updated_at: string;
 }
 
+export interface CredentialDetail extends Credential {
+  resource_name: string | null;
+  workspace_id: string | null;
+  workspace_name: string | null;
+}
+
 export interface CredentialRevealResponse {
   id: string;
   fields: Record<string, string>;

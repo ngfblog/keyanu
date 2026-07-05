@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { getCredentialIcon, CREDENTIAL_COLORS } from "@/lib/icons";
 import type { Credential, TemplateDefinition } from "@/types";
@@ -5,17 +6,15 @@ import type { Credential, TemplateDefinition } from "@/types";
 export function CredentialCard({
   credential,
   definition,
-  onClick,
 }: {
   credential: Credential;
   definition?: TemplateDefinition;
-  onClick: () => void;
 }) {
   const Icon = getCredentialIcon(definition?.icon ?? "lock");
   const color = CREDENTIAL_COLORS[credential.template] ?? "#8B949E";
 
   return (
-    <button onClick={onClick} className="block w-full text-left">
+    <Link to={`/credentials/${credential.id}`} className="block w-full text-left">
       <Card
         className="flex items-center gap-3 border-l-2 p-3.5 transition-all duration-150 hover:border-l-brass hover:bg-surface-hover"
         style={{ borderLeftColor: color }}
@@ -34,6 +33,6 @@ export function CredentialCard({
           </p>
         </div>
       </Card>
-    </button>
+    </Link>
   );
 }

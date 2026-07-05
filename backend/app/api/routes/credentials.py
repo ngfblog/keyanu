@@ -9,10 +9,12 @@ from app.models.enums import AuditAction
 from app.models.user import User
 from app.schemas.credential import (
     CredentialCreate,
+    CredentialDetail,
     CredentialRead,
     CredentialRevealResponse,
     CredentialUpdate,
 )
+from app.schemas.audit import AuditLogRead
 
 router = APIRouter(tags=["credentials"])
 
@@ -32,6 +34,38 @@ def list_credentials(
 ) -> list[CredentialRead]:
     get_owned_resource_or_404(db, resource_id, current_user.id)
     return crud_credential.list_credentials(db, resource_id)
+
+
+@router.get("/credentials/{credential_id}", response_model=CredentialDetail)
+def get_credential(
+    credential_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> CredentialDetail:
+    credential = _get_owned_credential_or_404(db, credential_id, current_user.id)
+    resource = credential.resource
+    return CredentialDetail(
+        id=credential.id,
+        resource_id=resource.id,
+        name=credential.name,
+        template=credential.template,
+        summary=credential.summary,
+        created_at=credential.created_at,
+        updated_at=credential.updated_at,
+        resource_name=resource.name,
+        workspace_id=resource.workspace_id,
+        workspace_name=resource.workspace.name,
+    )
+
+
+@router.get("/credentials/{credential_id}/audit", response_model=list[AuditLogRead])
+def get_credential_audit(
+    credential_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[AuditLogRead]:
+    _get_owned_credential_or_404(db, credential_id, current_user.id)
+    return crud_audit.list_for_entity(db, "credential", credential_id)
 
 
 @router.post(

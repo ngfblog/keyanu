@@ -42,6 +42,16 @@ def list_for_resource(db: Session, resource_id: str, limit: int = 100) -> list[A
     return list(db.execute(stmt).scalars().all())
 
 
+def list_for_entity(db: Session, entity_type: str, entity_id: str, limit: int = 100) -> list[AuditLog]:
+    stmt = (
+        select(AuditLog)
+        .where(AuditLog.entity_type == entity_type, AuditLog.entity_id == entity_id)
+        .order_by(AuditLog.created_at.desc())
+        .limit(limit)
+    )
+    return list(db.execute(stmt).scalars().all())
+
+
 def list_all(db: Session) -> list[AuditLog]:
     """Keyanu v1 is single-user, so every audit row belongs to the one
     account -- used for full-account backup export."""

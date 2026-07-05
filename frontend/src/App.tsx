@@ -8,6 +8,7 @@ import { LoginPage } from "@/pages/login-page";
 import { DashboardPage } from "@/pages/dashboard-page";
 import { ResourcesPage } from "@/pages/resources-page";
 import { ResourceDetailPage } from "@/pages/resource-detail-page";
+import { CredentialDetailPage } from "@/pages/credential-detail-page";
 import { SettingsLayout } from "@/pages/settings/settings-layout";
 import { GeneralSettingsPage } from "@/pages/settings/general-page";
 import { SecuritySettingsPage } from "@/pages/settings/security-page";
@@ -34,6 +35,7 @@ export default function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/workspaces/:workspaceId" element={<ResourcesPage />} />
                 <Route path="/resources/:resourceId" element={<ResourceDetailPage />} />
+                <Route path="/credentials/:credentialId" element={<CredentialDetailPage />} />
                 <Route path="/settings" element={<SettingsLayout />}>
                   <Route index element={<Navigate to="general" replace />} />
                   <Route path="general" element={<GeneralSettingsPage />} />

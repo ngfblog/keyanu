@@ -21,7 +21,6 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ResourceDialog } from "@/components/resources/resource-dialog";
 import { CredentialCard } from "@/components/credentials/credential-card";
 import { CredentialCreateDialog } from "@/components/credentials/credential-create-dialog";
-import { CredentialViewDialog } from "@/components/credentials/credential-view-dialog";
 import { FilesTab } from "@/components/resources/files-tab";
 import { NotesTab } from "@/components/resources/notes-tab";
 import { AuditTab } from "@/components/resources/audit-tab";
@@ -57,7 +56,6 @@ export function ResourceDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [createCredOpen, setCreateCredOpen] = useState(false);
-  const [viewingCredential, setViewingCredential] = useState<Credential | null>(null);
 
   const loadAll = useCallback(async () => {
     if (!resourceId) return;
@@ -82,18 +80,6 @@ export function ResourceDetailPage() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
-
-  const refreshCredentials = useCallback(async () => {
-    if (!resourceId) return;
-    const [creds, audits, res] = await Promise.all([
-      api.get<Credential[]>(`/resources/${resourceId}/credentials`),
-      api.get<AuditLogEntry[]>(`/resources/${resourceId}/audit`),
-      api.get<ResourceDetailType>(`/resources/${resourceId}`),
-    ]);
-    setCredentials(creds);
-    setAudit(audits);
-    setResource(res);
-  }, [resourceId]);
 
   const refreshFiles = useCallback(async () => {
     if (!resourceId) return;
@@ -290,7 +276,6 @@ export function ResourceDetailPage() {
                     key={cred.id}
                     credential={cred}
                     definition={templates.find((t) => t.id === cred.template)}
-                    onClick={() => setViewingCredential(cred)}
                   />
                 ))}
               </div>
@@ -332,17 +317,9 @@ export function ResourceDetailPage() {
       <CredentialCreateDialog
         open={createCredOpen}
         onClose={() => setCreateCredOpen(false)}
-        onCreated={refreshCredentials}
+        onCreated={(created) => navigate(`/credentials/${created.id}`)}
         resourceId={resource.id}
         templates={templates}
-      />
-
-      <CredentialViewDialog
-        open={!!viewingCredential}
-        onClose={() => setViewingCredential(null)}
-        credential={viewingCredential}
-        definition={templates.find((t) => t.id === viewingCredential?.template)}
-        onDeleted={() => refreshCredentials()}
       />
     </div>
   );
