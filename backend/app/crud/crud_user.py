@@ -14,8 +14,19 @@ def get_by_id(db: Session, user_id: str) -> User | None:
     return db.get(User, user_id)
 
 
-def create_user(db: Session, username: str, password: str, display_name: str | None = None) -> User:
-    user = User(username=username, hashed_password=hash_password(password), display_name=display_name)
+def create_user(
+    db: Session,
+    username: str,
+    password: str,
+    display_name: str | None = None,
+    must_change_password: bool = False,
+) -> User:
+    user = User(
+        username=username,
+        hashed_password=hash_password(password),
+        display_name=display_name,
+        must_change_password=must_change_password,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -29,8 +40,18 @@ def authenticate(db: Session, username: str, password: str) -> User | None:
     return user
 
 
-def set_password(db: Session, user: User, new_password: str) -> User:
+def set_password(db: Session, user: User, new_password: str, clear_must_change: bool = True) -> User:
     user.hashed_password = hash_password(new_password)
+    if clear_must_change:
+        user.must_change_password = False
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def set_username(db: Session, user: User, new_username: str) -> User:
+    user.username = new_username
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -45,6 +66,13 @@ def update_preferences(db: Session, user: User, data: dict) -> User:
     for key, value in data.items():
         if value is not None:
             setattr(user, key, value)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def save(db: Session, user: User) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)

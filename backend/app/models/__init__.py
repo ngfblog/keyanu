@@ -9,6 +9,8 @@ from app.models.credential import Credential  # noqa: F401
 from app.models.file import ResourceFile  # noqa: F401
 from app.models.note import Note  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
+from app.models.session import Session  # noqa: F401
+from app.models.recovery_code import RecoveryCode  # noqa: F401
 
 __all__ = [
     "User",
@@ -18,4 +20,6 @@ __all__ = [
     "ResourceFile",
     "Note",
     "AuditLog",
+    "Session",
+    "RecoveryCode",
 ]

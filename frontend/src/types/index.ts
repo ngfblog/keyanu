@@ -35,6 +35,34 @@ export interface User {
   username: string;
   display_name: string | null;
   created_at: string;
+  must_change_password: boolean;
+  totp_enabled: boolean;
+}
+
+export interface TotpSetupResponse {
+  secret: string;
+  otpauth_url: string;
+}
+
+export interface RecoveryCodesResponse {
+  codes: string[];
+  generated_at: string;
+}
+
+export interface RecoveryCodesStatus {
+  available: boolean;
+  remaining: number;
+  generated_at: string | null;
+}
+
+export interface SessionInfo {
+  id: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  user_agent: string | null;
+  ip_address: string | null;
+  is_current: boolean;
 }
 
 export interface Workspace {

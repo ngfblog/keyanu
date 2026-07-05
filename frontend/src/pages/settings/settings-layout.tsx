@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { SlidersHorizontal, Palette, Info } from "lucide-react";
+import { SlidersHorizontal, ShieldCheck, Palette, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { to: "/settings/general", label: "General", icon: SlidersHorizontal },
+  { to: "/settings/security", label: "Security", icon: ShieldCheck },
   { to: "/settings/appearance", label: "Appearance", icon: Palette },
   { to: "/settings/about", label: "About", icon: Info },
 ];

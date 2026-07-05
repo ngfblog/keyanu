@@ -21,13 +21,15 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api"
 
     # --- Security ---
-    # Used to sign JWT access tokens. MUST be overridden in production.
+    # Used to sign JWT session tokens. MUST be overridden in production.
     SECRET_KEY: str = "change-me-please-this-is-not-secure-for-production-use"
     # Used to derive the Fernet key that encrypts credential secrets at rest.
     # MUST be overridden in production and never changed after data exists.
     ENCRYPTION_KEY: str = "change-me-please-this-is-not-secure-for-production-use"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 12  # 12 hours
     ALGORITHM: str = "HS256"
+    # Default idle session timeout for newly created users (minutes). Each
+    # user can change their own value under Settings > Security.
+    DEFAULT_SESSION_TIMEOUT_MINUTES: int = 720  # 12 hours
 
     # --- Bootstrap single-user admin account ---
     ADMIN_USERNAME: str = "admin"

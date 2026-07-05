@@ -34,3 +34,4 @@ class AuditAction(str, enum.Enum):
     VIEW_SECRET = "view_secret"
     LOGIN = "login"
     LOGIN_FAILED = "login_failed"
+    LOGOUT = "logout"

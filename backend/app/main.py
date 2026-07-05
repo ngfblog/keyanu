@@ -3,7 +3,18 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import audit, auth, credentials, files, meta, notes, resources, settings as settings_routes, workspaces
+from app.api.routes import (
+    audit,
+    auth,
+    credentials,
+    files,
+    meta,
+    notes,
+    resources,
+    security as security_routes,
+    settings as settings_routes,
+    workspaces,
+)
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
@@ -49,8 +60,12 @@ def _bootstrap_admin_user() -> None:
                 username=settings.ADMIN_USERNAME,
                 password=settings.ADMIN_PASSWORD,
                 display_name="Administrator",
+                must_change_password=True,
             )
-            logger.info("Bootstrapped initial admin user '%s'", settings.ADMIN_USERNAME)
+            logger.info(
+                "Bootstrapped initial admin user '%s' (must change password on first login)",
+                settings.ADMIN_USERNAME,
+            )
     finally:
         db.close()
 
@@ -69,3 +84,4 @@ app.include_router(files.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audit.router, prefix=settings.API_V1_PREFIX)
 app.include_router(meta.router, prefix=settings.API_V1_PREFIX)
 app.include_router(settings_routes.router, prefix=settings.API_V1_PREFIX)
+app.include_router(security_routes.router, prefix=settings.API_V1_PREFIX)
