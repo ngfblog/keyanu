@@ -169,7 +169,7 @@ Sprint 2 (in progress):
 - [x] Settings shell + General & Appearance preferences
 - [x] Security: server-side sessions, forced password change, TOTP,
       recovery codes, active sessions, session timeout
-- [ ] Backup & Restore (`.keyanu` encrypted export/import)
+- [x] Backup & Restore (`.keyanu` encrypted export/import)
 - [ ] Global search (Ctrl+K)
 - [ ] Dedicated Credential page (own URL, out of the modal)
 - [ ] Infrastructure-oriented sidebar (Workspace → Category → System)
