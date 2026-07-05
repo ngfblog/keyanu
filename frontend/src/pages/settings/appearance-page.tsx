@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Moon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
 import { usePreferences } from "@/store/preferences-context";
 import { useToast } from "@/components/common/toast";
 import { ApiError } from "@/lib/api";
 import { ACCENT_COLOR_OPTIONS } from "@/lib/color";
+import { cn } from "@/lib/utils";
 
 function Toggle({
   checked,
@@ -20,7 +20,7 @@ function Toggle({
 }) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
-      <div>
+      <div className="min-w-0">
         <p className="text-sm font-medium text-ink">{label}</p>
         <p className="text-xs text-ink-muted">{description}</p>
       </div>
@@ -29,14 +29,16 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+        className={cn(
+          "inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
           checked ? "bg-brass" : "bg-surface-active"
-        }`}
+        )}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+          className={cn(
+            "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
             checked ? "translate-x-5" : "translate-x-0.5"
-          }`}
+          )}
         />
       </button>
     </div>
@@ -76,12 +78,11 @@ export function AppearanceSettingsPage() {
           <CardDescription>Keyanu is dark-themed by design — built for long infrastructure sessions.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="max-w-sm space-y-1.5">
-            <Select value="dark" disabled>
-              <option value="dark">Dark</option>
-            </Select>
-            <p className="text-[11px] text-ink-faint">Additional themes may be added in a future release.</p>
+          <div className="flex max-w-sm items-center gap-2.5 rounded-md border border-border bg-base/40 px-3 py-2">
+            <Moon className="h-4 w-4 text-ink-faint" />
+            <span className="text-sm text-ink">Dark</span>
           </div>
+          <p className="mt-1.5 text-[11px] text-ink-faint">Additional themes may be added in a future release.</p>
         </CardContent>
       </Card>
 

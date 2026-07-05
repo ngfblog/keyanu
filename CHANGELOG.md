@@ -4,6 +4,21 @@ All notable changes to Keyanu are documented in this file.
 
 ## Unreleased
 
+### Fixed — UI polish (Settings > Appearance)
+- **Theme dropdown**: a `<select>` with a single, disabled "Dark" option
+  was misleading (implies choice where none exists). Replaced with a
+  static "Dark" label (moon icon + text), matching the current reality
+  that Keyanu is dark-only. No functional change; a real theme picker can
+  replace this static label if/when a second theme is actually built.
+- **Compact mode / Animations switch alignment**: the toggle thumb was
+  positioned with `absolute` + a bare `translate-x-*`, with no explicit
+  base offset for the browser to anchor "auto" positioning against, which
+  could let the thumb render outside the switch track. Rewired to the
+  standard `inline-flex` track + in-flow `transform`-based thumb pattern
+  (no `absolute` positioning involved), keeping the thumb mathematically
+  contained within the track at both toggle states. Purely visual — the
+  toggles' behavior and API calls are unchanged.
+
 ### Changed — Deployment architecture: single Docker image
 
 Production deployment is now **one container, one image, one port**,
