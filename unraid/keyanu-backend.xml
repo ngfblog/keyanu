@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>keyanu-backend</Name>
+  <Repository>keyanu-backend:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/your-org/keyanu</Support>
+  <Project>https://github.com/your-org/keyanu</Project>
+  <Overview>
+Keyanu Backend — the FastAPI API and SQLite database for the Keyanu infrastructure
+credential manager. Build this image from the `backend/` folder of the Keyanu
+repository, or point Repository at your own registry tag once you have pushed one.
+
+This container must be reachable from the keyanu-frontend container on the same
+Docker network for the app to work. See the README in the unraid/ folder of the
+repository for full setup steps.
+  </Overview>
+  <Category>Tools: Utilities:</Category>
+  <WebUI>http://[IP]:[PORT:8000]/api/docs</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/your-org/keyanu/main/unraid/icon.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="WebUI Port" Target="8000" Default="8420" Mode="tcp" Description="Port the API listens on" Type="Port" Display="always" Required="true" Mask="false">8420</Config>
+
+  <Config Name="App Data" Target="/data" Default="/mnt/user/appdata/keyanu" Mode="rw" Description="Stores the SQLite database and uploaded files" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/keyanu</Config>
+
+  <Config Name="SECRET_KEY" Target="SECRET_KEY" Default="" Mode="" Description="Signs JWT session tokens. Generate with: openssl rand -hex 32" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="ENCRYPTION_KEY" Target="ENCRYPTION_KEY" Default="" Mode="" Description="Encrypts credential secrets at rest. Generate with: openssl rand -hex 32. Never change this after credentials exist." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="ADMIN_USERNAME" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Username for the initial (single) user account" Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
+
+  <Config Name="ADMIN_PASSWORD" Target="ADMIN_PASSWORD" Default="" Mode="" Description="Password for the initial admin account, created on first boot" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="ENVIRONMENT" Target="ENVIRONMENT" Default="production" Mode="" Description="Deployment environment label" Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
+</Container>
