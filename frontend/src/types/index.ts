@@ -129,3 +129,18 @@ export interface AuditLogEntry {
   created_at: string;
   user_id: string | null;
 }
+
+export interface Preferences {
+  display_name: string | null;
+  time_format: "12h" | "24h";
+  accent_color: string;
+  compact_mode: boolean;
+  animations_enabled: boolean;
+}
+
+export interface AboutInfo {
+  app_name: string;
+  version: string;
+  environment: string;
+  license: string;
+}

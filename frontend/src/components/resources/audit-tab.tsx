@@ -1,5 +1,7 @@
 import { History, KeyRound, FileText, StickyNote, Server, LogIn, Eye, Plus, Pencil, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/common/empty-state";
+import { usePreferences } from "@/store/preferences-context";
+import { formatDateTime } from "@/lib/datetime";
 import type { AuditAction, AuditLogEntry } from "@/types";
 
 const ACTION_ICON: Record<AuditAction, typeof Plus> = {
@@ -20,17 +22,9 @@ const ACTION_LABEL: Record<AuditAction, string> = {
   login_failed: "failed to sign in",
 };
 
-function formatTimestamp(iso: string): string {
-  const date = new Date(iso);
-  return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export function AuditTab({ entries }: { entries: AuditLogEntry[] }) {
+  const { preferences } = usePreferences();
+
   if (entries.length === 0) {
     return (
       <EmptyState
@@ -69,7 +63,7 @@ export function AuditTab({ entries }: { entries: AuditLogEntry[] }) {
                 <span className="text-ink-muted">was {ACTION_LABEL[entry.action]}</span>
               </p>
               <p className="text-xs text-ink-faint">
-                {formatTimestamp(entry.created_at)}
+                {formatDateTime(entry.created_at, preferences.time_format)}
                 {entry.detail ? ` · ${entry.detail}` : ""}
               </p>
             </div>

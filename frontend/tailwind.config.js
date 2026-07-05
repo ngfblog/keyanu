@@ -24,10 +24,10 @@ export default {
           faint: "#5B6472",
         },
         brass: {
-          DEFAULT: "#D4A72C",
-          hover: "#E3B94A",
-          muted: "#8A6D22",
-          subtle: "#2B2413",
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          hover: "rgb(var(--accent-hover) / <alpha-value>)",
+          muted: "rgb(var(--accent) / 0.55)",
+          subtle: "rgb(var(--accent) / 0.12)",
         },
         accent: {
           blue: "#58A6FF",
@@ -56,7 +56,7 @@ export default {
       boxShadow: {
         card: "0 1px 0 0 rgba(255,255,255,0.02) inset, 0 1px 2px 0 rgba(0,0,0,0.4)",
         elevated: "0 8px 24px -8px rgba(0,0,0,0.6)",
-        glow: "0 0 0 1px rgba(212,167,44,0.25), 0 0 20px -4px rgba(212,167,44,0.35)",
+        glow: "0 0 0 1px rgb(var(--accent) / 0.25), 0 0 20px -4px rgb(var(--accent) / 0.35)",
       },
       keyframes: {
         "fade-in": {

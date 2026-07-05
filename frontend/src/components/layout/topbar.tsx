@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
-import { Menu, LogOut, User as UserIcon, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, LogOut, User as UserIcon, ChevronDown, Settings } from "lucide-react";
 import { useAuth } from "@/store/auth-context";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,15 @@ export function Topbar({
               <div className="px-2 py-1.5 text-xs text-ink-faint">
                 Signed in as <span className="text-ink-muted">{user?.username}</span>
               </div>
+              <div className="my-1 h-px bg-border" />
+              <Link
+                to="/settings/general"
+                onClick={() => setMenuOpen(false)}
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink-muted hover:bg-surface-hover hover:text-ink"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
               <div className="my-1 h-px bg-border" />
               <button
                 onClick={logout}

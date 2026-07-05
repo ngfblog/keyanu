@@ -35,7 +35,7 @@ export function LoginPage() {
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-base px-4">
       <div
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full opacity-[0.12] blur-3xl"
-        style={{ background: "radial-gradient(closest-side, #D4A72C, transparent)" }}
+        style={{ background: "radial-gradient(closest-side, rgb(var(--accent)), transparent)" }}
       />
 
       <div className="relative w-full max-w-sm">

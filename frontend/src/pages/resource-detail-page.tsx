@@ -135,7 +135,7 @@ export function ResourceDetailPage() {
 
   if (loading || !resource) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="page-pad mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="h-8 w-64 animate-pulse rounded bg-surface-active" />
         <div className="mt-6 h-40 animate-pulse rounded-lg bg-surface" />
       </div>
@@ -147,7 +147,7 @@ export function ResourceDetailPage() {
   const tags = resource.tags ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="page-pad mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-4 flex items-center gap-1.5 text-xs text-ink-faint">
         <Link to={`/workspaces/${resource.workspace_id}`} className="hover:text-ink">
           {resource.workspace_name}

@@ -39,3 +39,13 @@ def set_password(db: Session, user: User, new_password: str) -> User:
 
 def count_users(db: Session) -> int:
     return db.query(User).count()
+
+
+def update_preferences(db: Session, user: User, data: dict) -> User:
+    for key, value in data.items():
+        if value is not None:
+            setattr(user, key, value)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
