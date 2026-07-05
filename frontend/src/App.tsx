@@ -11,6 +11,7 @@ import { ResourceDetailPage } from "@/pages/resource-detail-page";
 import { SettingsLayout } from "@/pages/settings/settings-layout";
 import { GeneralSettingsPage } from "@/pages/settings/general-page";
 import { SecuritySettingsPage } from "@/pages/settings/security-page";
+import { BackupSettingsPage } from "@/pages/settings/backup-page";
 import { AppearanceSettingsPage } from "@/pages/settings/appearance-page";
 import { AboutSettingsPage } from "@/pages/settings/about-page";
 import { NotFoundPage } from "@/pages/not-found-page";
@@ -37,6 +38,7 @@ export default function App() {
                   <Route index element={<Navigate to="general" replace />} />
                   <Route path="general" element={<GeneralSettingsPage />} />
                   <Route path="security" element={<SecuritySettingsPage />} />
+                  <Route path="backup" element={<BackupSettingsPage />} />
                   <Route path="appearance" element={<AppearanceSettingsPage />} />
                   <Route path="about" element={<AboutSettingsPage />} />
                 </Route>

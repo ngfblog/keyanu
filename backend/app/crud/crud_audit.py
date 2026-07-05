@@ -40,3 +40,15 @@ def list_for_resource(db: Session, resource_id: str, limit: int = 100) -> list[A
         .limit(limit)
     )
     return list(db.execute(stmt).scalars().all())
+
+
+def list_all(db: Session) -> list[AuditLog]:
+    """Keyanu v1 is single-user, so every audit row belongs to the one
+    account -- used for full-account backup export."""
+    stmt = select(AuditLog).order_by(AuditLog.created_at.asc())
+    return list(db.execute(stmt).scalars().all())
+
+
+def delete_all(db: Session) -> None:
+    db.query(AuditLog).delete()
+    db.commit()

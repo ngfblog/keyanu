@@ -71,4 +71,31 @@ export const api = {
     form.append("upload", file);
     return request<T>(path, { method: "POST", body: form });
   },
+  postForm: <T>(path: string, form: FormData) => request<T>(path, { method: "POST", body: form }),
 };
+
+/** For endpoints that return a binary file (e.g. backup export) rather than JSON. */
+export async function downloadPost(path: string, body: unknown): Promise<{ blob: Blob; filename: string }> {
+  const token = getToken();
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(`/api${path}`, { method: "POST", headers, body: JSON.stringify(body) });
+
+  if (!res.ok) {
+    let message = res.statusText;
+    try {
+      const data = await res.json();
+      message = data.detail || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  const filename = match ? match[1] : "keyanu-backup.keyanu";
+  const blob = await res.blob();
+  return { blob, filename };
+}

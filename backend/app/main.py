@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import (
     audit,
     auth,
+    backup,
     credentials,
     files,
     meta,
@@ -85,3 +86,4 @@ app.include_router(audit.router, prefix=settings.API_V1_PREFIX)
 app.include_router(meta.router, prefix=settings.API_V1_PREFIX)
 app.include_router(settings_routes.router, prefix=settings.API_V1_PREFIX)
 app.include_router(security_routes.router, prefix=settings.API_V1_PREFIX)
+app.include_router(backup.router, prefix=settings.API_V1_PREFIX)

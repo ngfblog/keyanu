@@ -65,6 +65,43 @@ export interface SessionInfo {
   is_current: boolean;
 }
 
+export interface BackupCounts {
+  workspaces: number;
+  resources: number;
+  credentials: number;
+  notes: number;
+  files: number;
+  audit_logs: number;
+}
+
+export interface BackupManifest {
+  keyanu_backup_format: number;
+  app_name: string;
+  app_version: string;
+  created_at: string;
+  exported_by: string;
+  encryption_key_fingerprint: string;
+  payload_checksum_sha256: string;
+  counts: BackupCounts;
+}
+
+export interface BackupVerifyResult {
+  valid: boolean;
+  structure_ok: boolean;
+  checksum_ok: boolean;
+  version_compatible: boolean;
+  encryption_key_matches: boolean;
+  can_decrypt: boolean;
+  manifest: BackupManifest | null;
+  counts: BackupCounts | null;
+  errors: string[];
+}
+
+export interface BackupRestoreResult {
+  restored: boolean;
+  counts: BackupCounts;
+}
+
 export interface Workspace {
   id: string;
   name: string;

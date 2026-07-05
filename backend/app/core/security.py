@@ -99,6 +99,15 @@ def decrypt_secret(ciphertext: str) -> str:
     return _fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
 
 
+def encryption_key_fingerprint() -> str:
+    """A short, non-reversible fingerprint of the active ENCRYPTION_KEY.
+
+    Safe to store in plaintext (e.g. a backup manifest) to detect whether a
+    backup was made with a different key, without revealing the key itself.
+    """
+    return hashlib.sha256(settings.ENCRYPTION_KEY.encode("utf-8")).hexdigest()[:16]
+
+
 # --- TOTP ------------------------------------------------------------------
 
 def generate_totp_secret() -> str:
