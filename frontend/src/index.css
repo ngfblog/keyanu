@@ -3,19 +3,59 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Default accent (brass/gold). Overridden at runtime by the
-       PreferencesProvider based on the user's Appearance settings. */
+  /* ------------------------------------------------------------------
+     Theme tokens. Every semantic color Tailwind exposes (base, surface,
+     border, ink) resolves to one of these CSS variables, so switching
+     [data-theme] on <html> re-themes the whole app instantly with zero
+     changes needed in individual components -- they already only ever
+     use the semantic class names (bg-base, text-ink, border-border...),
+     never raw colors.
+
+     --accent / --accent-hover are set separately, at runtime, by
+     PreferencesProvider based on the user's chosen accent color -- they
+     are independent of light/dark and defined here only as a fallback
+     default before that provider has run.
+     ------------------------------------------------------------------ */
+  :root,
+  html[data-theme="dark"] {
+    --base: 11 14 20;
+    --base-raised: 15 19 27;
+    --surface: 18 21 28;
+    --surface-hover: 23 27 36;
+    --surface-active: 28 33 44;
+    --border: 35 40 51;
+    --border-subtle: 26 30 39;
+    --ink: 230 232 235;
+    --ink-muted: 139 148 158;
+    --ink-faint: 91 100 114;
+    --scrollbar-thumb: 35 40 51;
+    --scrollbar-thumb-hover: 47 54 68;
+
     --accent: 212 167 44;
     --accent-hover: 227 185 74;
+
+    color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    --base: 246 248 250;
+    --base-raised: 237 239 242;
+    --surface: 255 255 255;
+    --surface-hover: 243 244 246;
+    --surface-active: 233 235 239;
+    --border: 216 222 228;
+    --border-subtle: 229 233 237;
+    --ink: 27 31 36;
+    --ink-muted: 89 99 110;
+    --ink-faint: 140 148 160;
+    --scrollbar-thumb: 199 206 214;
+    --scrollbar-thumb-hover: 180 188 197;
+
+    color-scheme: light;
   }
 
   * {
     @apply border-border;
-  }
-
-  html {
-    color-scheme: dark;
   }
 
   body {
@@ -36,12 +76,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: #232833;
+    background-color: rgb(var(--scrollbar-thumb));
     border-radius: 999px;
-    border: 2px solid #0b0e14;
+    border: 2px solid rgb(var(--base));
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #2f3644;
+    background-color: rgb(var(--scrollbar-thumb-hover));
   }
 
   /* Visible keyboard focus ring everywhere */

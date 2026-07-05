@@ -1,27 +1,27 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ["class"],
+  darkMode: ["selector", '[data-theme="dark"]'],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
         base: {
-          DEFAULT: "#0B0E14",
-          raised: "#0F131B",
+          DEFAULT: "rgb(var(--base) / <alpha-value>)",
+          raised: "rgb(var(--base-raised) / <alpha-value>)",
         },
         surface: {
-          DEFAULT: "#12151C",
-          hover: "#171B24",
-          active: "#1C212C",
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          hover: "rgb(var(--surface-hover) / <alpha-value>)",
+          active: "rgb(var(--surface-active) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "#232833",
-          subtle: "#1A1E27",
+          DEFAULT: "rgb(var(--border) / <alpha-value>)",
+          subtle: "rgb(var(--border-subtle) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "#E6E8EB",
-          muted: "#8B949E",
-          faint: "#5B6472",
+          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
+          muted: "rgb(var(--ink-muted) / <alpha-value>)",
+          faint: "rgb(var(--ink-faint) / <alpha-value>)",
         },
         brass: {
           DEFAULT: "rgb(var(--accent) / <alpha-value>)",

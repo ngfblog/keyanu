@@ -242,6 +242,7 @@ export interface AuditLogEntry {
 export interface Preferences {
   display_name: string | null;
   time_format: "12h" | "24h";
+  theme: "dark" | "light" | "system";
   accent_color: string;
   compact_mode: boolean;
   animations_enabled: boolean;

@@ -1,9 +1,8 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
     <title>Keyanu · Infrastructure Credential Manager</title>
     <meta name="description" content="Keyanu is a self-hosted credential manager for homelabs and system administrators." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -13,6 +12,30 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Applied before first paint so there is never a flash of the wrong
+      // theme -- reads the last-known choice (cached client-side) or falls
+      // back to the OS preference, and defaults to dark if neither is
+      // available. The real source of truth (the signed-in user's saved
+      // preference) is applied moments later by PreferencesProvider once
+      // it loads; this is only about what renders before that's possible.
+      (function () {
+        try {
+          var cached = localStorage.getItem("keyanu_theme_cache");
+          var setting = cached === "dark" || cached === "light" || cached === "system" ? cached : "system";
+          var resolved;
+          if (setting === "system") {
+            var supportsMatchMedia = typeof window.matchMedia === "function";
+            resolved = supportsMatchMedia && !window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark";
+          } else {
+            resolved = setting;
+          }
+          document.documentElement.setAttribute("data-theme", resolved);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
   </head>
   <body class="bg-base text-ink antialiased">
     <div id="root"></div>

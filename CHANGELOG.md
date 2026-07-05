@@ -4,6 +4,32 @@ All notable changes to Keyanu are documented in this file.
 
 ## Unreleased
 
+### Added — Full Dark / Light / System theme support
+- Replaced the placeholder single-option Theme dropdown with three real,
+  working themes: Dark, Light, and System (follows the OS preference).
+- Implemented via CSS custom properties (`--base`, `--surface`, `--border`,
+  `--ink` families) scoped to a `[data-theme]` attribute on `<html>`,
+  rather than per-component changes -- since every page and component
+  already used only semantic Tailwind tokens (never raw colors, confirmed
+  by a full grep sweep), the entire app re-themes correctly with zero
+  changes needed outside `tailwind.config.js` and `index.css`.
+- Switching themes updates the whole UI instantly, no reload -- confirmed
+  live through the running app, not just by code review.
+- "System" is applied via `window.matchMedia('(prefers-color-scheme:
+  dark)')` and updates live if the OS preference changes while the app is
+  open (no reload needed there either).
+- Default on first launch is System; if the browser doesn't support
+  `matchMedia` at all, defaults to Dark, per spec.
+- Theme choice persists server-side (new `theme` column on `User`,
+  `system`/`dark`/`light`, validated), the same way other Appearance
+  settings already persist -- confirmed to survive a fresh login/session,
+  not just the current one, via an automated test.
+- A small inline script in `index.html` applies the last-known theme
+  (cached client-side) before first paint, so there's no flash of the
+  wrong theme while the real preference loads from the server.
+- Removed the "Additional themes may be added in a future release"
+  placeholder text entirely.
+
 ### Fixed — UI polish (Settings > Appearance)
 - **Theme dropdown**: a `<select>` with a single, disabled "Dark" option
   was misleading (implies choice where none exists). Replaced with a

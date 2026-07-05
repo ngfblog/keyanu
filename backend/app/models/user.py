@@ -16,6 +16,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     # --- Preferences (Settings > General / Appearance) ---
     time_format: Mapped[str] = mapped_column(String(8), nullable=False, default="24h")
+    theme: Mapped[str] = mapped_column(String(8), nullable=False, default="system")
     accent_color: Mapped[str] = mapped_column(String(16), nullable=False, default="#D4A72C")
     compact_mode: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     animations_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

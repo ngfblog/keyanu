@@ -6,6 +6,7 @@ class PreferencesRead(BaseModel):
 
     display_name: str | None = None
     time_format: str
+    theme: str
     accent_color: str
     compact_mode: bool
     animations_enabled: bool
@@ -14,6 +15,7 @@ class PreferencesRead(BaseModel):
 class PreferencesUpdate(BaseModel):
     display_name: str | None = Field(default=None, max_length=128)
     time_format: str | None = Field(default=None, pattern="^(12h|24h)$")
+    theme: str | None = Field(default=None, pattern="^(dark|light|system)$")
     accent_color: str | None = Field(default=None, max_length=16)
     compact_mode: bool | None = None
     animations_enabled: bool | None = None
