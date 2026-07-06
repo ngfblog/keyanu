@@ -2,6 +2,8 @@
 
 Keyanu stores infrastructure credentials including SSH keys, passwords, API tokens, certificates and other sensitive data. Security issues are treated as the highest priority and take precedence over new features.
 
+---
+
 ## Reporting a Vulnerability
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
@@ -43,17 +45,19 @@ Only the latest released version receives security fixes.
 
 ## Security Model
 
-See the project's [README.md](README.md) for general project documentation.
+See the project's [README.md](README.md) for a general overview of Keyanu.
 
 ### Summary
 
 - Keyanu currently supports a single administrator account. Multi-user access and role-based permissions are planned for future releases.
 - Do **not** expose Keyanu directly to the public Internet. Use a VPN such as Tailscale or WireGuard, or place it behind a reverse proxy with its own authentication layer.
 - Sessions are stored server-side. The client only stores an opaque session identifier and never receives credentials or authentication claims.
-- Every credential, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
-- Changing or losing `ENCRYPTION_KEY` after data has been created will permanently make existing encrypted data unreadable. Back up this key securely before storing any credentials.
+- Every password, SSH key, API token, certificate, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
+- Generate separate values for `SECRET_KEY` and `ENCRYPTION_KEY`.
+- Back up both `SECRET_KEY` and `ENCRYPTION_KEY` before storing any credentials.
+- Losing or changing `ENCRYPTION_KEY` after encrypted data has been created permanently makes existing data unreadable. There is no recovery mechanism.
 - Optional TOTP two-factor authentication with bcrypt-hashed recovery codes.
-- Every credential create, update, delete and secret reveal is recorded in the audit log.
+- Every credential creation, update, deletion and secret reveal is recorded in the audit log.
 
 ---
 
@@ -61,4 +65,6 @@ See the project's [README.md](README.md) for general project documentation.
 
 Keyanu has no runtime dependency on external APIs or telemetry services during normal operation.
 
-It does not communicate with GitHub, Anthropic or any third-party service while running. All credentials and application data remain on your own server.
+It does not communicate with GitHub, Anthropic or any other third-party service while running.
+
+All credentials and application data remain on your own server.
