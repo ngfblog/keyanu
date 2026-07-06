@@ -1,5 +1,9 @@
 # Keyanu
 
+[![CI](https://github.com/nirgf/keyanu/actions/workflows/ci.yml/badge.svg)](https://github.com/nirgf/keyanu/actions/workflows/ci.yml)
+[![Docker Hub](https://img.shields.io/docker/v/nirgf/keyanu?label=docker%20hub&sort=semver)](https://hub.docker.com/r/nirgf/keyanu)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Keyanu is a self-hosted **infrastructure credential manager** for homelabs
 and system administrators. It's built for people who run pfSense, Unraid,
 MikroTik, Home Assistant, Cloudflare tunnels, and a dozen other systems, and
@@ -11,6 +15,8 @@ password managers.
 > encrypted backup/restore, a permanent-URL credential page, and global
 > search are all implemented and tested. See [ROADMAP.md](ROADMAP.md) for
 > what's next.
+>
+> 📖 [CHANGELOG](CHANGELOG.md) · 🗺️ [ROADMAP](ROADMAP.md) · 🤝 [CONTRIBUTING](CONTRIBUTING.md) · 🔒 [SECURITY](SECURITY.md)
 
 ## Concept
 
@@ -152,7 +158,36 @@ notes.
 
 ## Publishing to Docker Hub
 
-For maintainers building and pushing new images:
+### Automated (recommended) — GitHub Actions
+
+Pushing a version tag builds and publishes automatically via
+[`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml),
+for both `linux/amd64` and `linux/arm64`:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+This pushes both `nirgf/keyanu:latest` and `nirgf/keyanu:0.1.0`. It can
+also be triggered manually from the **Actions** tab (`workflow_dispatch`)
+without a tag, which publishes `nirgf/keyanu:manual-<short-sha>` plus
+`latest`.
+
+One-time setup: add two repository secrets under **Settings → Secrets and
+variables → Actions**:
+
+| Secret | Value |
+|---|---|
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
+| `DOCKERHUB_TOKEN` | A Docker Hub [access token](https://hub.docker.com/settings/security) (not your password) |
+
+Every push and pull request to `main` also runs
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml): backend tests,
+frontend build, and a Docker image build validation (not pushed) — so a
+broken build is caught before it ever reaches a tag.
+
+### Manual
 
 ```bash
 # From the repo root -- the Dockerfile here builds the frontend AND the

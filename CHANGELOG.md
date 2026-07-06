@@ -2,7 +2,32 @@
 
 All notable changes to Keyanu are documented in this file.
 
-## Unreleased
+## [Unreleased]
+
+## [0.1.0] - 2026-07-06
+
+First public release.
+
+### Added — GitHub & release packaging
+- `CONTRIBUTING.md`, `SECURITY.md`, and GitHub issue templates (bug
+  report, feature request) for public contributions.
+- GitHub Actions: CI (backend tests, frontend build, Docker image build
+  validation on every push/PR) and a separate Docker Hub publish workflow
+  gated on version tags.
+- Full repository audit for public release: verified no remaining
+  placeholder project information (GitHub org, Docker Hub account, or
+  contact details) anywhere in the codebase or docs.
+
+### Added — Unraid packaging
+- `unraid/icon.png`: a real 512×512 icon (previously the `<Icon>` URL in
+  the template pointed at a file that didn't exist yet).
+- `unraid/keyanu.xml` finalized with the real Docker Hub repository,
+  Support/Project links, and icon URL — no placeholders.
+- Corrected the Template Repositories installation instructions after
+  verifying the actual mechanism against several real-world Unraid
+  template repos: Unraid scans a plain GitHub repo URL (not a raw URL)
+  entered in Docker → Template repositories, the same way any third-party
+  container template is added.
 
 ### Added — Full Dark / Light / System theme support
 - Replaced the placeholder single-option Theme dropdown with three real,
@@ -209,3 +234,6 @@ previous change below.
 - Per-resource audit trail (create/update/delete/secret-reveal).
 - Dark, card-based UI (GitHub/Lockstep-inspired), dashboard, sidebar,
   resource list and detail pages, login page.
+
+[Unreleased]: https://github.com/nirgf/keyanu/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nirgf/keyanu/releases/tag/v0.1.0

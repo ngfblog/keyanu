@@ -4,7 +4,7 @@ See [CHANGELOG.md](CHANGELOG.md) for what's already shipped, in detail.
 
 ## Sprint 1 — Foundation ✅ complete
 
-- [x] Project structure, Docker, docker-compose, Unraid templates
+- [x] Project structure, single-image Docker packaging, Unraid template
 - [x] FastAPI backend shell with auth, workspaces, resources
 - [x] React frontend shell with dark theme, sidebar, dashboard
 - [x] Login page
@@ -23,6 +23,16 @@ See [CHANGELOG.md](CHANGELOG.md) for what's already shipped, in detail.
       restore, encryption-key-mismatch detection)
 - [x] Credential Page (permanent URL, replacing the view modal)
 - [x] Global Search (Ctrl+K), linking only to permanent URLs
+
+## Release engineering ✅ complete
+
+Deployment and packaging work done ahead of the first public release,
+outside the numbered feature sprints (see CHANGELOG.md for full detail):
+
+- [x] Single-image production architecture (`nirgf/keyanu:latest`) —
+      frontend, backend, and nginx in one container, one port, one volume
+- [x] Full Dark / Light / System theme support
+- [x] Public GitHub + Docker Hub + Unraid packaging (this release)
 
 ## Sprint 3 — Proposed next
 
