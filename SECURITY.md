@@ -43,17 +43,17 @@ Only the latest released version receives security fixes.
 
 ## Security Model
 
-See the project's **README.md** for a general overview of Keyanu.
+See the project's [README.md](README.md) for general project documentation.
 
 ### Summary
 
 - Keyanu currently supports a single administrator account. Multi-user access and role-based permissions are planned for future releases.
 - Do **not** expose Keyanu directly to the public Internet. Use a VPN such as Tailscale or WireGuard, or place it behind a reverse proxy with its own authentication layer.
 - Sessions are stored server-side. The client only stores an opaque session identifier and never receives credentials or authentication claims.
-- Every password, SSH key, API token, certificate, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
-- Back up both `SECRET_KEY` and `ENCRYPTION_KEY` before storing any credentials. Losing `ENCRYPTION_KEY` permanently prevents existing encrypted data from being decrypted.
+- Every credential, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
+- Changing or losing `ENCRYPTION_KEY` after data has been created will permanently make existing encrypted data unreadable. Back up this key securely before storing any credentials.
 - Optional TOTP two-factor authentication with bcrypt-hashed recovery codes.
-- Every credential creation, update, deletion and secret reveal is recorded in the audit log.
+- Every credential create, update, delete and secret reveal is recorded in the audit log.
 
 ---
 
@@ -61,6 +61,4 @@ See the project's **README.md** for a general overview of Keyanu.
 
 Keyanu has no runtime dependency on external APIs or telemetry services during normal operation.
 
-It does not communicate with GitHub, Anthropic or any other third-party service while running.
-
-All credentials and application data remain on your own server.
+It does not communicate with GitHub, Anthropic or any third-party service while running. All credentials and application data remain on your own server.
