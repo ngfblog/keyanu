@@ -114,10 +114,16 @@ environment UI, Kubernetes secrets, etc.).
 
 One template, one container, no custom Docker network.
 
-1. Copy `unraid/keyanu.xml` into
-   `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server,
-   or add this repo as a template repository under **Docker → Add
-   Container → Template repositories**.
+1. Push this repo to GitHub as a public repository (e.g.
+   `github.com/nirgf/keyanu`), then on your Unraid server go to the
+   **Docker** tab → **Template repositories** field near the bottom of
+   the page, paste the plain repo URL, and click **Save**. Unraid scans
+   the repo for `.xml` templates and finds `unraid/keyanu.xml`
+   automatically — this is the same mechanism used to add any third-party
+   container that isn't in the default Community Applications feed.
+   (No GitHub account? Copy `unraid/keyanu.xml` directly into
+   `/boot/config/plugins/dockerMan/templates-user/` instead — see
+   [`unraid/README.md`](unraid/README.md) for both options in detail.)
 2. In Unraid, go to **Apps** (or **Docker → Add Container**) and search
    for "keyanu". The template pulls `nirgf/keyanu:latest` directly from
    Docker Hub — nothing to build.

@@ -7,17 +7,43 @@ second container, and nothing to build on Unraid itself.
 
 ## Installation
 
-1. In Unraid, go to **Docker → Add Container → Template repositories** and
-   add this repository's raw URL, or copy `unraid/keyanu.xml` directly
-   into `/boot/config/plugins/dockerMan/templates-user/` on your Unraid
-   server.
-2. Go to **Apps** (or **Docker → Add Container**) and search for
-   "keyanu". The template pulls `nirgf/keyanu:latest` straight from Docker
-   Hub.
-3. Fill in the required fields directly in Unraid's UI — every one of
-   these is a plain Docker environment variable on the container, editable
-   any time from **Docker → keyanu → Edit**, no file editing or SSH
-   required:
+### Option A — Template Repository (recommended, same as any other container)
+
+This is the standard way Unraid users add third-party containers that
+aren't in the default Community Applications feed:
+
+1. Push this repository to GitHub as a **public** repo (e.g.
+   `https://github.com/nirgf/keyanu`) — Unraid needs to reach it over
+   plain HTTP(S), it can't scan a private repo.
+2. On your Unraid server, go to **Docker** tab → **Template repositories**
+   (near the bottom of the page, below your container list).
+3. Paste the plain repo URL: `https://github.com/nirgf/keyanu` and click
+   **Save**. Unraid scans the whole repo for `.xml` template files — it
+   will find `unraid/keyanu.xml` regardless of the folder it's in.
+4. Click **Add Container**, open the **Template** dropdown at the top,
+   and select **keyanu**. All fields below pre-fill from the template.
+5. Fill in the required fields (table below) and click **Apply**.
+
+From then on, "keyanu" shows up in your Template dropdown like any other
+container you've added this way — no different from adding a template
+repo for any other app.
+
+### Option B — Local template file (no GitHub needed)
+
+If you don't want to publish the repo, or just want to test locally:
+
+1. Copy `unraid/keyanu.xml` into
+   `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server
+   (e.g. via the Unraid terminal, or the file share over SMB).
+2. Go to **Docker → Add Container**, open the **Template** dropdown, and
+   select **keyanu** — it appears the same way as Option A, just sourced
+   from a local file instead of a scanned repo.
+
+### Filling in the fields
+
+Every field below is a plain Docker environment variable on the
+container, editable any time from **Docker → keyanu → Edit** — no file
+editing or SSH required:
 
    | Field | Required | Notes |
    |---|---|---|
@@ -29,15 +55,27 @@ second container, and nothing to build on Unraid itself.
    | `DEFAULT_SESSION_TIMEOUT_MINUTES` | ✅ | Idle session timeout in minutes for the admin account at first boot (default `720` = 12h); each account can change its own value later under Settings > Security |
    | `ENVIRONMENT` | ✅ | Leave as `production` |
 
-4. Confirm the **Appdata** path — defaults to `/mnt/user/appdata/keyanu`
-   on the host, mapped to `/data` inside the container. This is where the
-   SQLite database and any uploaded files live.
-5. Apply. Unraid pulls the image and starts the container.
-6. Open `http://<unraid-ip>:8420/` and sign in with the admin credentials
-   you set. You'll be required to choose a new password immediately.
+Confirm the **Appdata** path too — defaults to `/mnt/user/appdata/keyanu`
+on the host, mapped to `/data` inside the container. This is where the
+SQLite database and any uploaded files live.
+
+Apply. Unraid pulls `nirgf/keyanu:latest` from Docker Hub and starts the
+container. Open `http://<unraid-ip>:8420/` and sign in with the admin
+credentials you set — you'll be required to choose a new password
+immediately.
 
 That's the entire installation — no building on Unraid, no separate
 frontend/backend containers, no custom network, no second template.
+
+### The icon
+
+`unraid/icon.png` is the image referenced by `<Icon>` in the template —
+Unraid fetches it directly from
+`https://raw.githubusercontent.com/nirgf/keyanu/main/unraid/icon.png`, so
+it only resolves once the repo is pushed to GitHub as `nirgf/keyanu` with
+that file present on the `main` branch. If you rename the repo, the
+GitHub account, or the branch, update the `<Icon>` URL (and `<Support>` /
+`<Project>` if you'd like) in `unraid/keyanu.xml` to match.
 
 ## Generating secrets
 
