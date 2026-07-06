@@ -52,7 +52,7 @@ See the project's [README.md](README.md) for a general overview of Keyanu.
 - Keyanu currently supports a single administrator account. Multi-user access and role-based permissions are planned for future releases.
 - Do **not** expose Keyanu directly to the public Internet. Use a VPN such as Tailscale or WireGuard, or place it behind a reverse proxy with its own authentication layer.
 - Sessions are stored server-side. The client only stores an opaque session identifier and never receives credentials or authentication claims.
-- Every password, SSH key, API token, certificate, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
+- Every credential, SSH key, API token, certificate, TOTP secret and encrypted backup is protected using a key derived from `ENCRYPTION_KEY`.
 - Generate separate values for `SECRET_KEY` and `ENCRYPTION_KEY`.
 - Back up both `SECRET_KEY` and `ENCRYPTION_KEY` before storing any credentials.
 - Losing or changing `ENCRYPTION_KEY` after encrypted data has been created permanently makes existing data unreadable. There is no recovery mechanism.
