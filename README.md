@@ -95,6 +95,11 @@ backup tooling.
 manually. Your data lives in the Appdata volume, not the image, so
 updates don't affect it.
 
+## ❤️ Support
+
+If my projects helped you or saved you time, consider supporting future development:
+
+👉 https://paypal.me/ShopNGF
 ---
 
 Working on Keyanu itself rather than just running it? See the root
