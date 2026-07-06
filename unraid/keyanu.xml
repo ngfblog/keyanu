@@ -19,16 +19,30 @@ Keyanu is a self-hosted infrastructure credential manager for homelabs and syste
 This single container includes the web UI, API, SQLite database and Nginx reverse proxy.
 No additional containers, Docker networks or manual configuration are required.
 
-Before starting the container, generate the required encryption keys.
+Network
+The default Docker bridge network is recommended for most installations.
 
-Generate SECRET_KEY:
+Before starting the container, generate TWO different cryptographic keys.
+
+SECRET_KEY
+Protects sessions, authentication and internal application security.
+
+Generate:
 openssl rand -hex 32
 
-Generate ENCRYPTION_KEY:
+ENCRYPTION_KEY
+Encrypts all stored passwords, SSH keys, API tokens, certificates, TOTP secrets and encrypted backups.
+
+Generate:
 openssl rand -hex 32
 
-Store both keys in a safe place.
-Never change ENCRYPTION_KEY after credentials have been created, or all encrypted data will become permanently unreadable.
+IMPORTANT
+
+• SECRET_KEY and ENCRYPTION_KEY must be different values.
+• Store both keys in a safe place before adding any data.
+• Keep a backup of both keys outside of your Keyanu appdata backups.
+• Never change or lose ENCRYPTION_KEY after credentials have been created.
+  Existing encrypted data cannot be recovered without it.
 
 On first boot, the initial administrator account is created from ADMIN_USERNAME and ADMIN_PASSWORD.
 You will be required to change the password after the first login.
@@ -66,7 +80,7 @@ You will be required to change the password after the first login.
     Target="/data"
     Default="/mnt/user/appdata/keyanu"
     Mode="rw"
-    Description="Persistent application data (database, uploaded files and backups)."
+    Description="Persistent application data including the database, encrypted secrets, uploaded files and backups. Back up this folder regularly."
     Type="Path"
     Display="always"
     Required="true"
@@ -76,7 +90,7 @@ You will be required to change the password after the first login.
     Name="SECRET_KEY"
     Target="SECRET_KEY"
     Default=""
-    Description="Required. Generate with: openssl rand -hex 32"
+    Description="Required. Protects sessions and internal application security. Generate with: openssl rand -hex 32. Store this key safely."
     Type="Variable"
     Display="always"
     Required="true"
@@ -86,7 +100,7 @@ You will be required to change the password after the first login.
     Name="ENCRYPTION_KEY"
     Target="ENCRYPTION_KEY"
     Default=""
-    Description="Required. Generate with: openssl rand -hex 32. Never change this key after data has been created."
+    Description="Required. Encrypts passwords, SSH keys, API tokens, certificates, TOTP secrets and encrypted backups. Generate with: openssl rand -hex 32. Use a different value than SECRET_KEY. Back up this key. Never change or lose it after data has been created."
     Type="Variable"
     Display="always"
     Required="true"
