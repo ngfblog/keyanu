@@ -1,27 +1,47 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>keyanu</Name>
+
   <Repository>nirgf/keyanu:latest</Repository>
   <Registry>https://hub.docker.com/r/nirgf/keyanu</Registry>
+
   <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://hub.docker.com/r/nirgf/keyanu</Support>
-  <Project>https://hub.docker.com/r/nirgf/keyanu</Project>
+
+  <Support>https://github.com/ngfblog/keyanu/issues</Support>
+  <Project>https://github.com/ngfblog/keyanu</Project>
+
   <Overview>
 Keyanu is a self-hosted infrastructure credential manager for homelabs and system administrators.
 
-This single container includes the web UI, API, SQLite database, and Nginx reverse proxy.
-No additional containers, Docker networks, or manual configuration are required.
+This single container includes the web UI, API, SQLite database and Nginx reverse proxy.
+No additional containers, Docker networks or manual configuration are required.
+
+Before starting the container, generate the required encryption keys.
+
+Generate SECRET_KEY:
+openssl rand -hex 32
+
+Generate ENCRYPTION_KEY:
+openssl rand -hex 32
+
+Store both keys in a safe place.
+Never change ENCRYPTION_KEY after credentials have been created, or all encrypted data will become permanently unreadable.
 
 On first boot, the initial administrator account is created from ADMIN_USERNAME and ADMIN_PASSWORD.
 You will be required to change the password after the first login.
   </Overview>
+
   <Category>Tools:Utilities:Security</Category>
+
   <WebUI>http://[IP]:[PORT:8420]/</WebUI>
+
   <TemplateURL/>
-  <Icon>https://raw.githubusercontent.com/nirgf/keyanu/main/unraid/icon.png</Icon>
+
+  <Icon>https://raw.githubusercontent.com/ngfblog/keyanu/main/unraid/icon.png</Icon>
+
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
@@ -29,13 +49,97 @@ You will be required to change the password after the first login.
   <DonateText/>
   <DonateLink/>
   <Requires/>
-  <Config Name="WebUI Port" Target="8420" Default="8420" Mode="tcp" Description="Port used by the Keyanu web interface." Type="Port" Display="always" Required="true" Mask="false">8420</Config>
-  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/keyanu" Mode="rw" Description="Persistent application data: database, uploads and backups." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/keyanu</Config>
-  <Config Name="SECRET_KEY" Target="SECRET_KEY" Default="" Description="JWT signing key. Generate with: openssl rand -hex 32" Type="Variable" Display="always" Required="true" Mask="true"/>
-  <Config Name="ENCRYPTION_KEY" Target="ENCRYPTION_KEY" Default="" Description="Encryption key for stored secrets. Generate with: openssl rand -hex 32. Never change after data exists." Type="Variable" Display="always" Required="true" Mask="true"/>
-  <Config Name="ADMIN_USERNAME" Target="ADMIN_USERNAME" Default="admin" Description="Initial administrator username." Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
-  <Config Name="ADMIN_PASSWORD" Target="ADMIN_PASSWORD" Default="" Description="Temporary administrator password. You will be prompted to change it after first login." Type="Variable" Display="always" Required="true" Mask="true"/>
-  <Config Name="DATA_DIR" Target="DATA_DIR" Default="/data" Description="Internal application data directory." Type="Variable" Display="advanced" Required="true" Mask="false">/data</Config>
-  <Config Name="DEFAULT_SESSION_TIMEOUT_MINUTES" Target="DEFAULT_SESSION_TIMEOUT_MINUTES" Default="720" Description="Default idle session timeout in minutes." Type="Variable" Display="advanced" Required="true" Mask="false">720</Config>
-  <Config Name="ENVIRONMENT" Target="ENVIRONMENT" Default="production" Description="Application environment." Type="Variable" Display="advanced" Required="true" Mask="false">production</Config>
+
+  <Config
+    Name="WebUI Port"
+    Target="8420"
+    Default="8420"
+    Mode="tcp"
+    Description="Port used by the Keyanu web interface."
+    Type="Port"
+    Display="always"
+    Required="true"
+    Mask="false">8420</Config>
+
+  <Config
+    Name="Appdata"
+    Target="/data"
+    Default="/mnt/user/appdata/keyanu"
+    Mode="rw"
+    Description="Persistent application data (database, uploaded files and backups)."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/keyanu</Config>
+
+  <Config
+    Name="SECRET_KEY"
+    Target="SECRET_KEY"
+    Default=""
+    Description="Required. Generate with: openssl rand -hex 32"
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"/>
+
+  <Config
+    Name="ENCRYPTION_KEY"
+    Target="ENCRYPTION_KEY"
+    Default=""
+    Description="Required. Generate with: openssl rand -hex 32. Never change this key after data has been created."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"/>
+
+  <Config
+    Name="ADMIN_USERNAME"
+    Target="ADMIN_USERNAME"
+    Default="admin"
+    Description="Initial administrator username."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="false">admin</Config>
+
+  <Config
+    Name="ADMIN_PASSWORD"
+    Target="ADMIN_PASSWORD"
+    Default=""
+    Description="Temporary administrator password. You will be prompted to change it after first login."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true"/>
+
+  <Config
+    Name="DATA_DIR"
+    Target="DATA_DIR"
+    Default="/data"
+    Description="Internal application data directory. Leave unchanged unless you also change the Appdata path."
+    Type="Variable"
+    Display="advanced"
+    Required="true"
+    Mask="false">/data</Config>
+
+  <Config
+    Name="DEFAULT_SESSION_TIMEOUT_MINUTES"
+    Target="DEFAULT_SESSION_TIMEOUT_MINUTES"
+    Default="720"
+    Description="Default idle session timeout in minutes (720 = 12 hours)."
+    Type="Variable"
+    Display="advanced"
+    Required="true"
+    Mask="false">720</Config>
+
+  <Config
+    Name="ENVIRONMENT"
+    Target="ENVIRONMENT"
+    Default="production"
+    Description="Application environment."
+    Type="Variable"
+    Display="advanced"
+    Required="true"
+    Mask="false">production</Config>
+
 </Container>
