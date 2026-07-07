@@ -11,6 +11,7 @@ class BackupCounts(BaseModel):
     credentials: int
     notes: int
     files: int
+    custom_icons: int = 0
     audit_logs: int
 
 

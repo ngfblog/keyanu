@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { KeyRound, FileText, StickyNote, Server } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { RESOURCE_COLORS, defaultResourceIcon, getIcon, labelForType } from "@/lib/icons";
+import { RESOURCE_COLORS, defaultResourceIcon, labelForType } from "@/lib/icons";
+import { IconPreview } from "@/components/common/icon-preview";
 import type { Resource } from "@/types";
 
 export function ResourceCard({ resource }: { resource: Resource }) {
-  const Icon = getIcon(resource.icon ?? defaultResourceIcon(resource.type));
   const color = RESOURCE_COLORS[resource.type] ?? "#8B949E";
   const tags = resource.tags
     ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -20,7 +20,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
               style={{ backgroundColor: `${color}1A`, color }}
             >
-              <Icon className="h-[18px] w-[18px]" />
+              <IconPreview icon={resource.icon} fallback={defaultResourceIcon(resource.type)} className="h-[18px] w-[18px]" />
             </span>
             <div className="min-w-0">
               <h3 className="truncate text-sm font-semibold text-ink group-hover:text-brass transition-colors">

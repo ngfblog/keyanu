@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, KeyRound, Plus, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { defaultWorkspaceIcon, getIcon } from "@/lib/icons";
+import { defaultWorkspaceIcon } from "@/lib/icons";
+import { IconPreview } from "@/components/common/icon-preview";
 import type { Workspace } from "@/types";
 
 export function Sidebar({
@@ -67,7 +68,6 @@ export function Sidebar({
         ) : (
           <div className="flex flex-col gap-0.5">
             {workspaces.map((ws) => {
-              const Icon = getIcon(ws.icon ?? defaultWorkspaceIcon(ws.type));
               return (
               <NavLink
                 key={ws.id}
@@ -86,7 +86,7 @@ export function Sidebar({
                   className="flex h-5 w-5 shrink-0 items-center justify-center rounded"
                   style={{ backgroundColor: `${ws.color}22`, color: ws.color ?? "#D4A72C" }}
                 >
-                  <Icon className="h-3 w-3" />
+                  <IconPreview icon={ws.icon} fallback={defaultWorkspaceIcon(ws.type)} className="h-3 w-3" />
                 </span>
                 <span className="flex-1 truncate">{ws.name}</span>
                 <span className="text-[11px] text-ink-faint">{ws.resource_count}</span>

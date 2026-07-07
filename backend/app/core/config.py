@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     DATA_DIR: str = "/data"
     DB_FILENAME: str = "keyanu.db"
     FILES_DIR_NAME: str = "files"
+    ICONS_DIR_NAME: str = "icons"
 
     # --- CORS ---
     CORS_ORIGINS: List[str] = ["*"]
@@ -52,6 +53,12 @@ class Settings(BaseSettings):
     @property
     def files_dir_path(self) -> Path:
         path = self.data_dir_path / self.FILES_DIR_NAME
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def icons_dir_path(self) -> Path:
+        path = self.data_dir_path / self.ICONS_DIR_NAME
         path.mkdir(parents=True, exist_ok=True)
         return path
 

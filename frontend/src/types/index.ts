@@ -98,6 +98,7 @@ export interface BackupCounts {
   credentials: number;
   notes: number;
   files: number;
+  custom_icons: number;
   audit_logs: number;
 }
 

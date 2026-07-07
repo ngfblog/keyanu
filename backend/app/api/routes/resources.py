@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -6,6 +6,7 @@ from app.crud import crud_audit, crud_resource, crud_workspace
 from app.db.session import get_db
 from app.models.enums import AuditAction
 from app.models.user import User
+from app.core.icon_files import delete_icon_reference, save_uploaded_icon
 from app.schemas.resource import ResourceCreate, ResourceDetail, ResourceRead, ResourceUpdate
 
 router = APIRouter(tags=["resources"])
@@ -82,6 +83,33 @@ def get_resource(
     return ResourceDetail(**base.model_dump(), workspace_name=resource.workspace.name)
 
 
+@router.post("/resources/{resource_id}/icon", response_model=ResourceRead)
+async def upload_resource_icon(
+    resource_id: str,
+    upload: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ResourceRead:
+    resource = get_owned_resource_or_404(db, resource_id, current_user.id)
+    old_icon = resource.icon
+    resource.icon = await save_uploaded_icon(upload)
+    db.add(resource)
+    db.commit()
+    db.refresh(resource)
+    delete_icon_reference(old_icon)
+    crud_audit.log(
+        db,
+        action=AuditAction.UPDATE,
+        entity_type="resource",
+        entity_id=resource.id,
+        entity_name=resource.name,
+        user_id=current_user.id,
+        resource_id=resource.id,
+        workspace_id=resource.workspace_id,
+    )
+    return _to_read(db, resource)
+
+
 @router.put("/resources/{resource_id}", response_model=ResourceRead)
 def update_resource(
     resource_id: str,
@@ -90,7 +118,10 @@ def update_resource(
     db: Session = Depends(get_db),
 ) -> ResourceRead:
     resource = get_owned_resource_or_404(db, resource_id, current_user.id)
+    old_icon = resource.icon
     resource = crud_resource.update_resource(db, resource, payload)
+    if resource.icon != old_icon:
+        delete_icon_reference(old_icon)
     crud_audit.log(
         db,
         action=AuditAction.UPDATE,
@@ -120,4 +151,5 @@ def delete_resource(
         user_id=current_user.id,
         workspace_id=resource.workspace_id,
     )
+    delete_icon_reference(resource.icon)
     crud_resource.delete_resource(db, resource)

@@ -9,6 +9,7 @@ import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
 import { RESOURCE_LABELS, RESOURCE_TYPES, defaultResourceIcon } from "@/lib/icons";
 import { IconPicker } from "@/components/common/icon-picker";
+import { IconPreview, isUploadedIcon } from "@/components/common/icon-preview";
 import type { Resource, ResourceType } from "@/types";
 
 export function ResourceDialog({
@@ -32,6 +33,10 @@ export function ResourceDialog({
   const [hostname, setHostname] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
+  const [iconSource, setIconSource] = useState<"built-in" | "upload">("built-in");
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreviewUrl, setIconPreviewUrl] = useState<string | null>(null);
+  const [iconError, setIconError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +47,13 @@ export function ResourceDialog({
       const known = RESOURCE_TYPES.includes(resType);
       setType(known ? resType : "custom");
       setCustomType(known ? "" : resType);
-      setIcon(resource?.icon ?? defaultResourceIcon(resType));
+      const currentIcon = resource?.icon ?? defaultResourceIcon(resType);
+      setIcon(currentIcon);
+      setIconSource(isUploadedIcon(currentIcon) ? "upload" : "built-in");
+      setIconFile(null);
+      if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
+      setIconPreviewUrl(null);
+      setIconError(null);
       setHostname(resource?.hostname ?? "");
       setDescription(resource?.description ?? "");
       setTags(resource?.tags ?? "");
@@ -50,16 +61,36 @@ export function ResourceDialog({
     }
   }, [open, resource]);
 
+  function handleIconFile(file: File | null) {
+    setIconFile(null);
+    setIconError(null);
+    if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
+    setIconPreviewUrl(null);
+    if (!file) return;
+    const validTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+    if (!validTypes.includes(file.type)) {
+      setIconError("Icon image must be PNG, JPG, JPEG, WEBP, or safe SVG.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setIconError("Icon image must be 1 MB or smaller.");
+      return;
+    }
+    setIconFile(file);
+    setIconPreviewUrl(URL.createObjectURL(file));
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
     try {
       const realType = type === "custom" ? customType.trim() : type;
+      if (iconError) return;
       const payload = {
         name,
         type: realType,
-        icon: icon || defaultResourceIcon(realType),
+        icon: iconSource === "built-in" ? (icon || defaultResourceIcon(realType)) : (isUploadedIcon(icon) ? icon : defaultResourceIcon(realType)),
         hostname: hostname || null,
         description: description || null,
         tags: tags || null,
@@ -67,8 +98,9 @@ export function ResourceDialog({
       const result = resource
         ? await api.put<Resource>(`/resources/${resource.id}`, payload)
         : await api.post<Resource>(`/workspaces/${workspaceId}/resources`, payload);
+      const saved = iconSource === "upload" && iconFile ? await api.upload<Resource>(`/resources/${result.id}/icon`, iconFile) : result;
       notify(resource ? "Resource updated" : "Resource added");
-      onSaved(result);
+      onSaved(saved);
       onClose();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
@@ -116,9 +148,21 @@ export function ResourceDialog({
               <Input id="res-custom-type" value={customType} onChange={(e) => setCustomType(e.target.value)} placeholder="Internal API" required maxLength={64} />
             </div>
           )}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Icon</Label>
-            <IconPicker value={icon} onChange={setIcon} />
+            <div className="flex items-center gap-3 rounded-md border border-border bg-surface-muted p-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-surface-active">
+                {iconPreviewUrl ? <img src={iconPreviewUrl} alt="Selected upload preview" className="h-8 w-8 rounded object-cover" /> : <IconPreview icon={icon} fallback={defaultResourceIcon(type === "custom" ? customType : type)} className="h-8 w-8" />}
+              </span>
+              <span className="text-xs text-ink-muted">Current icon preview</span>
+            </div>
+            <div className="flex gap-4 text-sm">
+              <label className="flex items-center gap-2"><input type="radio" checked={iconSource === "built-in"} onChange={() => { setIconSource("built-in"); setIcon(defaultResourceIcon(type === "custom" ? customType : type)); handleIconFile(null); }} /> Built-in icon</label>
+              <label className="flex items-center gap-2"><input type="radio" checked={iconSource === "upload"} onChange={() => setIconSource("upload")} /> Upload image</label>
+            </div>
+            {iconSource === "built-in" ? <IconPicker value={isUploadedIcon(icon) ? defaultResourceIcon(type === "custom" ? customType : type) : icon} onChange={setIcon} /> : <Input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(e) => handleIconFile(e.target.files?.[0] ?? null)} />}
+            {iconSource === "upload" && isUploadedIcon(icon) && !iconFile && <Button type="button" variant="secondary" onClick={() => { setIconSource("built-in"); setIcon(defaultResourceIcon(type === "custom" ? customType : type)); handleIconFile(null); }}>Remove custom image</Button>}
+            {iconError && <p className="text-xs text-danger">{iconError}</p>}
           </div>
 
           <div className="space-y-1.5">

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { IconPicker } from "@/components/common/icon-picker";
+import { IconPreview, isUploadedIcon } from "@/components/common/icon-preview";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
 import { WORKSPACE_LABELS, WORKSPACE_TYPES, defaultWorkspaceIcon, labelForType } from "@/lib/icons";
@@ -31,6 +32,10 @@ export function WorkspaceDialog({
   const [customType, setCustomType] = useState("");
   const [icon, setIcon] = useState("folder");
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
+  const [iconSource, setIconSource] = useState<"built-in" | "upload">("built-in");
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreviewUrl, setIconPreviewUrl] = useState<string | null>(null);
+  const [iconError, setIconError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,11 +47,36 @@ export function WorkspaceDialog({
       const known = WORKSPACE_TYPES.includes(wsType as any);
       setType(known ? wsType : "custom");
       setCustomType(known ? "" : wsType);
-      setIcon(workspace?.icon ?? defaultWorkspaceIcon(wsType));
+      const currentIcon = workspace?.icon ?? defaultWorkspaceIcon(wsType);
+      setIcon(currentIcon);
+      setIconSource(isUploadedIcon(currentIcon) ? "upload" : "built-in");
+      setIconFile(null);
+      if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
+      setIconPreviewUrl(null);
+      setIconError(null);
       setColor(workspace?.color ?? COLOR_OPTIONS[0]);
       setError(null);
     }
   }, [open, workspace]);
+
+  function handleIconFile(file: File | null) {
+    setIconFile(null);
+    setIconError(null);
+    if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
+    setIconPreviewUrl(null);
+    if (!file) return;
+    const validTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+    if (!validTypes.includes(file.type)) {
+      setIconError("Icon image must be PNG, JPG, JPEG, WEBP, or safe SVG.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setIconError("Icon image must be 1 MB or smaller.");
+      return;
+    }
+    setIconFile(file);
+    setIconPreviewUrl(URL.createObjectURL(file));
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -54,12 +84,14 @@ export function WorkspaceDialog({
     setError(null);
     try {
       const realType = type === "custom" ? customType.trim() : type;
-      const payload = { name, description: description || null, type: realType, color, icon: icon || defaultWorkspaceIcon(realType) };
+      if (iconError) return;
+      const payload = { name, description: description || null, type: realType, color, icon: iconSource === "built-in" ? (icon || defaultWorkspaceIcon(realType)) : (isUploadedIcon(icon) ? icon : defaultWorkspaceIcon(realType)) };
       const result = workspace
         ? await api.put<Workspace>(`/workspaces/${workspace.id}`, payload)
         : await api.post<Workspace>("/workspaces", payload);
+      const saved = iconSource === "upload" && iconFile ? await api.upload<Workspace>(`/workspaces/${result.id}/icon`, iconFile) : result;
       notify(workspace ? "Workspace updated" : "Workspace created");
-      onSaved(result);
+      onSaved(saved);
       onClose();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
@@ -114,9 +146,21 @@ export function WorkspaceDialog({
               </div>
             )}
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Icon</Label>
-            <IconPicker value={icon} onChange={setIcon} />
+            <div className="flex items-center gap-3 rounded-md border border-border bg-surface-muted p-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-surface-active">
+                {iconPreviewUrl ? <img src={iconPreviewUrl} alt="Selected upload preview" className="h-8 w-8 rounded object-cover" /> : <IconPreview icon={icon} fallback={defaultWorkspaceIcon(type === "custom" ? customType : type)} className="h-8 w-8" />}
+              </span>
+              <span className="text-xs text-ink-muted">Current icon preview</span>
+            </div>
+            <div className="flex gap-4 text-sm">
+              <label className="flex items-center gap-2"><input type="radio" checked={iconSource === "built-in"} onChange={() => { setIconSource("built-in"); setIcon(defaultWorkspaceIcon(type === "custom" ? customType : type)); handleIconFile(null); }} /> Built-in icon</label>
+              <label className="flex items-center gap-2"><input type="radio" checked={iconSource === "upload"} onChange={() => setIconSource("upload")} /> Upload image</label>
+            </div>
+            {iconSource === "built-in" ? <IconPicker value={isUploadedIcon(icon) ? defaultWorkspaceIcon(type === "custom" ? customType : type) : icon} onChange={setIcon} /> : <Input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(e) => handleIconFile(e.target.files?.[0] ?? null)} />}
+            {iconSource === "upload" && isUploadedIcon(icon) && !iconFile && <Button type="button" variant="secondary" onClick={() => { setIconSource("built-in"); setIcon(defaultWorkspaceIcon(type === "custom" ? customType : type)); handleIconFile(null); }}>Remove custom image</Button>}
+            {iconError && <p className="text-xs text-danger">{iconError}</p>}
             <p className="text-[11px] text-ink-faint">Default: {labelForType(type === "custom" ? customType : type)}</p>
           </div>
           <div className="space-y-1.5">

@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/common/empty-state";
 import { WorkspaceDialog } from "@/components/layout/workspace-dialog";
 import { api } from "@/lib/api";
-import { defaultWorkspaceIcon, getIcon, labelForType } from "@/lib/icons";
+import { defaultWorkspaceIcon, labelForType } from "@/lib/icons";
+import { IconPreview } from "@/components/common/icon-preview";
 import type { Resource, Workspace } from "@/types";
 
 interface ShellContext {
@@ -103,7 +104,6 @@ export function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {workspaces.map((ws) => {
-            const Icon = getIcon(ws.icon ?? defaultWorkspaceIcon(ws.type));
             return (
             <Link key={ws.id} to={`/workspaces/${ws.id}`} className="group block">
               <Card className="flex h-full flex-col gap-3 p-4 transition-all duration-150 hover:border-brass/40 hover:shadow-elevated">
@@ -112,7 +112,7 @@ export function DashboardPage() {
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
                     style={{ backgroundColor: `${ws.color}1A`, color: ws.color ?? "#D4A72C" }}
                   >
-                    <Icon className="h-[18px] w-[18px]" />
+                    <IconPreview icon={ws.icon} fallback={defaultWorkspaceIcon(ws.type)} className="h-[18px] w-[18px]" />
                   </span>
                   <h3 className="truncate text-sm font-semibold text-ink group-hover:text-brass transition-colors">
                     {ws.name}

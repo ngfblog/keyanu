@@ -24,7 +24,8 @@ import { CredentialCreateDialog } from "@/components/credentials/credential-crea
 import { FilesTab } from "@/components/resources/files-tab";
 import { NotesTab } from "@/components/resources/notes-tab";
 import { AuditTab } from "@/components/resources/audit-tab";
-import { RESOURCE_COLORS, defaultResourceIcon, getIcon, labelForType } from "@/lib/icons";
+import { RESOURCE_COLORS, defaultResourceIcon, labelForType } from "@/lib/icons";
+import { IconPreview } from "@/components/common/icon-preview";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
 import type {
@@ -137,7 +138,6 @@ export function ResourceDetailPage() {
     );
   }
 
-  const Icon = getIcon(resource.icon ?? defaultResourceIcon(resource.type));
   const color = RESOURCE_COLORS[resource.type];
   const tags = resource.tags ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
@@ -157,7 +157,7 @@ export function ResourceDetailPage() {
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
             style={{ backgroundColor: `${color}1A`, color }}
           >
-            <Icon className="h-6 w-6" />
+            <IconPreview icon={resource.icon} fallback={defaultResourceIcon(resource.type)} className="h-6 w-6" />
           </span>
           <div>
             <h1 className="text-lg font-semibold tracking-tight text-ink">{resource.name}</h1>

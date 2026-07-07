@@ -29,6 +29,7 @@ from cryptography.fernet import InvalidToken
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.icon_files import icon_dir_path, icon_filename, is_custom_icon
 from app.core.security import decrypt_secret, encrypt_secret, encryption_key_fingerprint
 from app.crud import crud_audit, crud_resource, crud_workspace
 from app.models.credential import Credential
@@ -69,8 +70,25 @@ def _build_payload(db: Session, user: User) -> dict:
     credentials_out = []
     notes_out = []
     files_out = []
+    custom_icons_out = []
+    seen_icon_files = set()
+
+    def collect_icon(value: str | None) -> None:
+        if not is_custom_icon(value):
+            return
+        filename = icon_filename(value or "")
+        if filename in seen_icon_files:
+            return
+        seen_icon_files.add(filename)
+        path = icon_dir_path() / filename
+        custom_icons_out.append({
+            "reference": value,
+            "filename": filename,
+            "content_base64": base64.b64encode(path.read_bytes()).decode("ascii") if path.exists() else None,
+        })
 
     for ws in workspaces:
+        collect_icon(ws.icon)
         workspaces_out.append(
             {
                 "id": ws.id,
@@ -84,6 +102,7 @@ def _build_payload(db: Session, user: User) -> dict:
             }
         )
         for res in crud_resource.list_resources(db, ws.id):
+            collect_icon(res.icon)
             resources_out.append(
                 {
                     "id": res.id,
@@ -170,6 +189,7 @@ def _build_payload(db: Session, user: User) -> dict:
         "credentials": credentials_out,
         "notes": notes_out,
         "files": files_out,
+        "custom_icons": custom_icons_out,
         "audit_logs": audit_logs_out,
         "user": {
             "display_name": user.display_name,
@@ -193,6 +213,7 @@ def _counts(payload: dict) -> dict:
         "credentials": len(payload.get("credentials", [])),
         "notes": len(payload.get("notes", [])),
         "files": len(payload.get("files", [])),
+        "custom_icons": len(payload.get("custom_icons", [])),
         "audit_logs": len(payload.get("audit_logs", [])),
     }
 
@@ -313,6 +334,10 @@ def restore_payload(db: Session, user: User, payload: dict) -> dict:
                     f.unlink(missing_ok=True)
                 resource_dir.rmdir()
         db.delete(ws)  # cascades to resources/credentials/files-rows/notes
+    icon_root = icon_dir_path()
+    for icon_file in icon_root.iterdir():
+        if icon_file.is_file():
+            icon_file.unlink(missing_ok=True)
     crud_audit.delete_all(db)
     db.query(RecoveryCode).filter(RecoveryCode.user_id == user.id).delete()
     db.commit()
@@ -389,6 +414,12 @@ def restore_payload(db: Session, user: User, payload: dict) -> dict:
                 detected_metadata=file_data.get("detected_metadata"),
             )
         )
+
+    for icon_data in payload.get("custom_icons", []):
+        content_b64 = icon_data.get("content_base64")
+        filename = icon_data.get("filename")
+        if content_b64 and filename:
+            (icon_dir_path() / filename).write_bytes(base64.b64decode(content_b64))
 
     from app.models.audit_log import AuditLog
 
