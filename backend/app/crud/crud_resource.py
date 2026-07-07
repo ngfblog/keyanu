@@ -12,7 +12,7 @@ def list_resources(db: Session, workspace_id: str) -> list[Resource]:
     stmt = (
         select(Resource)
         .where(Resource.workspace_id == workspace_id)
-        .order_by(Resource.created_at, Resource.id)
+        .order_by(Resource.name, Resource.id)
     )
     return list(db.execute(stmt).scalars().all())
 
