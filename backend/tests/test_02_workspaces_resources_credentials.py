@@ -83,3 +83,51 @@ def test_credential_rename(client, auth_headers):
 def test_unauthenticated_requests_are_rejected(client):
     resp = client.get("/api/workspaces")
     assert resp.status_code == 401
+
+
+def test_workspace_update_delete_custom_type_and_icon(client, auth_headers):
+    created = client.post(
+        "/api/workspaces",
+        headers=auth_headers,
+        json={"name": "Portal", "type": "customer portal", "icon": "globe"},
+    )
+    assert created.status_code == 201
+    ws_id = created.json()["id"]
+    assert created.json()["type"] == "customer portal"
+    assert created.json()["icon"] == "globe"
+
+    renamed = client.put(
+        f"/api/workspaces/{ws_id}",
+        headers=auth_headers,
+        json={"name": "Renamed Portal", "type": "app", "icon": "app"},
+    )
+    assert renamed.status_code == 200
+    assert renamed.json()["name"] == "Renamed Portal"
+    assert renamed.json()["type"] == "app"
+    assert renamed.json()["icon"] == "app"
+
+    deleted = client.delete(f"/api/workspaces/{ws_id}", headers=auth_headers)
+    assert deleted.status_code == 204
+    assert client.get(f"/api/workspaces/{ws_id}", headers=auth_headers).status_code == 404
+
+
+def test_resource_custom_type_website_and_icon(client, auth_headers):
+    ws_id = _get_workspace_id(client, auth_headers)
+    website = client.post(
+        f"/api/workspaces/{ws_id}/resources",
+        headers=auth_headers,
+        json={"name": "Docs", "type": "website", "icon": "globe"},
+    )
+    assert website.status_code == 201
+    assert website.json()["type"] == "website"
+    assert website.json()["icon"] == "globe"
+
+    res_id = website.json()["id"]
+    custom = client.put(
+        f"/api/resources/{res_id}",
+        headers=auth_headers,
+        json={"type": "message broker", "icon": "network"},
+    )
+    assert custom.status_code == 200
+    assert custom.json()["type"] == "message broker"
+    assert custom.json()["icon"] == "network"

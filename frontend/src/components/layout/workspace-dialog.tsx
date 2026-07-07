@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
+import { IconPicker } from "@/components/common/icon-picker";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
+import { WORKSPACE_LABELS, WORKSPACE_TYPES, defaultWorkspaceIcon, labelForType } from "@/lib/icons";
 import type { Workspace } from "@/types";
 
 const COLOR_OPTIONS = ["#D4A72C", "#58A6FF", "#2DD4BF", "#A78BFA", "#F472B6", "#FB923C", "#3FB950", "#F85149"];
@@ -24,6 +27,9 @@ export function WorkspaceDialog({
   const { notify } = useToast();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState("website");
+  const [customType, setCustomType] = useState("");
+  const [icon, setIcon] = useState("folder");
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +38,11 @@ export function WorkspaceDialog({
     if (open) {
       setName(workspace?.name ?? "");
       setDescription(workspace?.description ?? "");
+      const wsType = workspace?.type ?? "website";
+      const known = WORKSPACE_TYPES.includes(wsType as any);
+      setType(known ? wsType : "custom");
+      setCustomType(known ? "" : wsType);
+      setIcon(workspace?.icon ?? defaultWorkspaceIcon(wsType));
       setColor(workspace?.color ?? COLOR_OPTIONS[0]);
       setError(null);
     }
@@ -42,7 +53,8 @@ export function WorkspaceDialog({
     setSaving(true);
     setError(null);
     try {
-      const payload = { name, description: description || null, color, icon: "folder" };
+      const realType = type === "custom" ? customType.trim() : type;
+      const payload = { name, description: description || null, type: realType, color, icon: icon || defaultWorkspaceIcon(realType) };
       const result = workspace
         ? await api.put<Workspace>(`/workspaces/${workspace.id}`, payload)
         : await api.post<Workspace>("/workspaces", payload);
@@ -86,6 +98,26 @@ export function WorkspaceDialog({
               placeholder="What lives in this workspace?"
               rows={3}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="ws-type">Type</Label>
+              <Select id="ws-type" value={type} onChange={(e) => { const v = e.target.value; setType(v); if (v !== "custom") setIcon(defaultWorkspaceIcon(v)); }}>
+                {WORKSPACE_TYPES.map((t) => <option key={t} value={t}>{WORKSPACE_LABELS[t]}</option>)}
+                <option value="custom">Other / Custom</option>
+              </Select>
+            </div>
+            {type === "custom" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="ws-custom-type">Custom type</Label>
+                <Input id="ws-custom-type" value={customType} onChange={(e) => setCustomType(e.target.value)} placeholder="Client portal" required maxLength={64} />
+              </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Icon</Label>
+            <IconPicker value={icon} onChange={setIcon} />
+            <p className="text-[11px] text-ink-faint">Default: {labelForType(type === "custom" ? customType : type)}</p>
           </div>
           <div className="space-y-1.5">
             <Label>Color</Label>

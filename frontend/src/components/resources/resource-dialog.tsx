@@ -7,10 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
-import { RESOURCE_LABELS } from "@/lib/icons";
+import { RESOURCE_LABELS, RESOURCE_TYPES, defaultResourceIcon } from "@/lib/icons";
+import { IconPicker } from "@/components/common/icon-picker";
 import type { Resource, ResourceType } from "@/types";
-
-const RESOURCE_TYPES = Object.keys(RESOURCE_LABELS) as ResourceType[];
 
 export function ResourceDialog({
   open,
@@ -28,6 +27,8 @@ export function ResourceDialog({
   const { notify } = useToast();
   const [name, setName] = useState("");
   const [type, setType] = useState<ResourceType>("custom");
+  const [customType, setCustomType] = useState("");
+  const [icon, setIcon] = useState("box");
   const [hostname, setHostname] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
@@ -37,7 +38,11 @@ export function ResourceDialog({
   useEffect(() => {
     if (open) {
       setName(resource?.name ?? "");
-      setType(resource?.type ?? "custom");
+      const resType = resource?.type ?? "custom";
+      const known = RESOURCE_TYPES.includes(resType);
+      setType(known ? resType : "custom");
+      setCustomType(known ? "" : resType);
+      setIcon(resource?.icon ?? defaultResourceIcon(resType));
       setHostname(resource?.hostname ?? "");
       setDescription(resource?.description ?? "");
       setTags(resource?.tags ?? "");
@@ -50,9 +55,11 @@ export function ResourceDialog({
     setSaving(true);
     setError(null);
     try {
+      const realType = type === "custom" ? customType.trim() : type;
       const payload = {
         name,
-        type,
+        type: realType,
+        icon: icon || defaultResourceIcon(realType),
         hostname: hostname || null,
         description: description || null,
         tags: tags || null,
@@ -94,14 +101,24 @@ export function ResourceDialog({
             </div>
             <div className="col-span-2 space-y-1.5 sm:col-span-1">
               <Label htmlFor="res-type">Type</Label>
-              <Select id="res-type" value={type} onChange={(e) => setType(e.target.value as ResourceType)}>
+              <Select id="res-type" value={type} onChange={(e) => { const v = e.target.value as ResourceType; setType(v); if (v !== "custom") setIcon(defaultResourceIcon(v)); }}>
                 {RESOURCE_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {RESOURCE_LABELS[t]}
+                    {t === "custom" ? "Other / Custom" : RESOURCE_LABELS[t]}
                   </option>
                 ))}
               </Select>
             </div>
+          </div>
+          {type === "custom" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="res-custom-type">Custom type</Label>
+              <Input id="res-custom-type" value={customType} onChange={(e) => setCustomType(e.target.value)} placeholder="Internal API" required maxLength={64} />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label>Icon</Label>
+            <IconPicker value={icon} onChange={setIcon} />
           </div>
 
           <div className="space-y-1.5">

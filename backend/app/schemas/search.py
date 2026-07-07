@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
-from app.models.enums import CredentialTemplate, ResourceType
+from app.models.enums import CredentialTemplate
 
 
 class SearchResourceResult(BaseModel):
     id: str
     name: str
-    type: ResourceType
+    type: str
     hostname: str | None = None
     workspace_id: str
     workspace_name: str

@@ -2,12 +2,12 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import ResourceType
 
 
 class ResourceBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=128)
-    type: ResourceType = ResourceType.CUSTOM
+    type: str = Field(default="custom", min_length=1, max_length=64)
+    icon: str | None = Field(default=None, max_length=32)
     description: str | None = Field(default=None, max_length=2000)
     hostname: str | None = Field(default=None, max_length=255)
     tags: str | None = Field(default=None, max_length=512)
@@ -19,7 +19,8 @@ class ResourceCreate(ResourceBase):
 
 class ResourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=128)
-    type: ResourceType | None = None
+    type: str | None = Field(default=None, min_length=1, max_length=64)
+    icon: str | None = Field(default=None, max_length=32)
     description: str | None = Field(default=None, max_length=2000)
     hostname: str | None = Field(default=None, max_length=255)
     tags: str | None = Field(default=None, max_length=512)

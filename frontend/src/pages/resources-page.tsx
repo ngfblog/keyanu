@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
-import { Plus, Search, Server } from "lucide-react";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Pencil, Plus, Search, Server, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/common/empty-state";
 import { ResourceCard } from "@/components/resources/resource-card";
 import { ResourceDialog } from "@/components/resources/resource-dialog";
+import { WorkspaceDialog } from "@/components/layout/workspace-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { useToast } from "@/components/common/toast";
 import { api } from "@/lib/api";
 import type { Resource, Workspace } from "@/types";
 
@@ -16,11 +19,15 @@ interface ShellContext {
 
 export function ResourcesPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const navigate = useNavigate();
+  const { notify } = useToast();
   const { workspaces, refreshWorkspaces } = useOutletContext<ShellContext>();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const workspace = workspaces.find((w) => w.id === workspaceId);
 
@@ -40,6 +47,18 @@ export function ResourcesPage() {
     `${r.name} ${r.hostname ?? ""} ${r.tags ?? ""}`.toLowerCase().includes(query.toLowerCase())
   );
 
+  async function handleWorkspaceSaved() {
+    await refreshWorkspaces();
+  }
+
+  async function handleDeleteWorkspace() {
+    if (!workspace) return;
+    await api.delete(`/workspaces/${workspace.id}`);
+    notify("Workspace deleted");
+    await refreshWorkspaces();
+    navigate("/");
+  }
+
   async function handleSaved() {
     await load();
     await refreshWorkspaces();
@@ -56,10 +75,22 @@ export function ResourcesPage() {
             <p className="mt-0.5 text-sm text-ink-muted">{workspace.description}</p>
           )}
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Add resource
-        </Button>
+        <div className="flex gap-2">
+          {workspace && (
+            <>
+              <Button variant="secondary" onClick={() => setWorkspaceDialogOpen(true)}>
+                <Pencil className="h-4 w-4" /> Rename
+              </Button>
+              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
+            </>
+          )}
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Add resource
+          </Button>
+        </div>
       </div>
 
       {resources.length > 0 && (
@@ -100,6 +131,13 @@ export function ResourcesPage() {
             <ResourceCard key={resource.id} resource={resource} />
           ))}
         </div>
+      )}
+
+      {workspace && (
+        <WorkspaceDialog open={workspaceDialogOpen} onClose={() => setWorkspaceDialogOpen(false)} onSaved={handleWorkspaceSaved} workspace={workspace} />
+      )}
+      {workspace && (
+        <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteWorkspace} title="Delete workspace?" description="This will permanently delete the workspace and its resources." confirmLabel="Delete workspace" destructive />
       )}
 
       {workspaceId && (

@@ -32,7 +32,7 @@ from app.core.config import settings
 from app.core.security import decrypt_secret, encrypt_secret, encryption_key_fingerprint
 from app.crud import crud_audit, crud_resource, crud_workspace
 from app.models.credential import Credential
-from app.models.enums import AuditAction, CredentialTemplate, ResourceType
+from app.models.enums import AuditAction, CredentialTemplate
 from app.models.note import Note
 from app.models.recovery_code import RecoveryCode
 from app.models.resource import Resource
@@ -76,6 +76,7 @@ def _build_payload(db: Session, user: User) -> dict:
                 "id": ws.id,
                 "name": ws.name,
                 "description": ws.description,
+                "type": ws.type,
                 "icon": ws.icon,
                 "color": ws.color,
                 "created_at": _iso(ws.created_at),
@@ -88,7 +89,8 @@ def _build_payload(db: Session, user: User) -> dict:
                     "id": res.id,
                     "workspace_id": ws.id,
                     "name": res.name,
-                    "type": res.type.value,
+                    "type": res.type,
+                    "icon": res.icon,
                     "description": res.description,
                     "hostname": res.hostname,
                     "tags": res.tags,
@@ -322,6 +324,7 @@ def restore_payload(db: Session, user: User, payload: dict) -> dict:
                 id=ws_data["id"],
                 name=ws_data["name"],
                 description=ws_data.get("description"),
+                type=ws_data.get("type"),
                 icon=ws_data.get("icon"),
                 color=ws_data.get("color"),
                 owner_id=user.id,
@@ -335,7 +338,8 @@ def restore_payload(db: Session, user: User, payload: dict) -> dict:
                 id=res_data["id"],
                 workspace_id=res_data["workspace_id"],
                 name=res_data["name"],
-                type=ResourceType(res_data["type"]),
+                type=res_data["type"],
+                icon=res_data.get("icon"),
                 description=res_data.get("description"),
                 hostname=res_data.get("hostname"),
                 tags=res_data.get("tags"),

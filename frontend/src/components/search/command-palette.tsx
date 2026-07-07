@@ -5,7 +5,7 @@ import { Search, Loader2, Server, KeyRound, FileText, StickyNote, Clock, X, Corn
 import { createPortal } from "react-dom";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { RESOURCE_ICONS, RESOURCE_COLORS, RESOURCE_LABELS, CREDENTIAL_COLORS } from "@/lib/icons";
+import { RESOURCE_COLORS, labelForType, CREDENTIAL_COLORS } from "@/lib/icons";
 import { HighlightMatch } from "@/components/search/highlight-match";
 import { addRecentSearch, getRecentSearches, clearRecentSearches } from "@/lib/recent-searches";
 import type { SearchResults } from "@/types";
@@ -30,10 +30,10 @@ function buildFlatResults(results: SearchResults | null): FlatResult[] {
     flat.push({
       key: `resource-${r.id}`,
       type: "resource",
-      icon: RESOURCE_ICONS[r.type] ?? Server,
+      icon: Server,
       color: RESOURCE_COLORS[r.type] ?? "#8B949E",
       title: r.name,
-      subtitle: `${RESOURCE_LABELS[r.type]} · ${r.workspace_name}`,
+      subtitle: `${labelForType(r.type)} · ${r.workspace_name}`,
       url: `/resources/${r.id}`,
     });
   }
