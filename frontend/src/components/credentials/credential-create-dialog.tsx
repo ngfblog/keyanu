@@ -47,6 +47,9 @@ export function CredentialCreateDialog({
     setFieldValues({});
   }, [templateId]);
 
+  const standardFields = template?.fields.filter((field) => field.help_text !== "Advanced") ?? [];
+  const advancedFields = template?.fields.filter((field) => field.help_text === "Advanced") ?? [];
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!template) return;
@@ -113,7 +116,7 @@ export function CredentialCreateDialog({
             <>
               <p className="text-xs text-ink-muted">{template.description}</p>
               <div className="space-y-4 rounded-md border border-border bg-base/40 p-3.5">
-                {template.fields.map((field) => (
+                {standardFields.map((field) => (
                   <FieldInput
                     key={field.key}
                     field={field}
@@ -121,6 +124,21 @@ export function CredentialCreateDialog({
                     onChange={(value) => setFieldValues((prev) => ({ ...prev, [field.key]: value }))}
                   />
                 ))}
+                {advancedFields.length > 0 && (
+                  <details className="rounded-md border border-border bg-surface/60 p-3">
+                    <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-ink-faint">Advanced</summary>
+                    <div className="mt-3 space-y-4">
+                      {advancedFields.map((field) => (
+                        <FieldInput
+                          key={field.key}
+                          field={field}
+                          value={fieldValues[field.key] ?? ""}
+                          onChange={(value) => setFieldValues((prev) => ({ ...prev, [field.key]: value }))}
+                        />
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
             </>
           )}

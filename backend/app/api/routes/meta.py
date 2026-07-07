@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import get_current_user
 from app.core.templates import TEMPLATE_DEFINITIONS
-from app.models.enums import ResourceType
 from app.models.user import User
 from app.schemas.credential import TemplateDefinitionSchema
 
@@ -36,4 +35,4 @@ def get_credential_templates(current_user: User = Depends(get_current_user)):
 
 @router.get("/resource-types", response_model=list[str])
 def get_resource_types(current_user: User = Depends(get_current_user)):
-    return [rt.value for rt in ResourceType]
+    return ["pfsense", "unraid", "mikrotik", "github", "cloudflare", "home_assistant", "docker_host", "nas", "router", "server", "website", "custom"]

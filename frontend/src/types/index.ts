@@ -1,15 +1,4 @@
-export type ResourceType =
-  | "pfsense"
-  | "unraid"
-  | "mikrotik"
-  | "github"
-  | "cloudflare"
-  | "home_assistant"
-  | "docker_host"
-  | "nas"
-  | "router"
-  | "server"
-  | "custom";
+export type ResourceType = string;
 
 export type CredentialTemplateId =
   | "ssh_key_pair"
@@ -144,6 +133,7 @@ export interface Workspace {
   id: string;
   name: string;
   description: string | null;
+  type: string | null;
   icon: string | null;
   color: string | null;
   created_at: string;
@@ -156,6 +146,7 @@ export interface Resource {
   workspace_id: string;
   name: string;
   type: ResourceType;
+  icon: string | null;
   description: string | null;
   hostname: string | null;
   tags: string | null;

@@ -1,8 +1,7 @@
-from sqlalchemy import Enum, ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.enums import ResourceType
 from app.models.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 
 
@@ -10,9 +9,8 @@ class Resource(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "resources"
 
     name: Mapped[str] = mapped_column(String(128), nullable=False)
-    type: Mapped[ResourceType] = mapped_column(
-        Enum(ResourceType, native_enum=False, length=32), nullable=False, default=ResourceType.CUSTOM
-    )
+    type: Mapped[str] = mapped_column(String(64), nullable=False, default="custom")
+    icon: Mapped[str] = mapped_column(String(32), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     hostname: Mapped[str] = mapped_column(String(255), nullable=True)
     tags: Mapped[str] = mapped_column(String(512), nullable=True)  # comma-separated

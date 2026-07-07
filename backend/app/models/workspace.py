@@ -10,6 +10,7 @@ class Workspace(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
+    type: Mapped[str] = mapped_column(String(64), nullable=True, default="website")
     icon: Mapped[str] = mapped_column(String(32), nullable=True, default="folder")
     color: Mapped[str] = mapped_column(String(16), nullable=True, default="#d4a72c")
 

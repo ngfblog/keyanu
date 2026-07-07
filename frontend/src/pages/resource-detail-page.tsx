@@ -24,7 +24,7 @@ import { CredentialCreateDialog } from "@/components/credentials/credential-crea
 import { FilesTab } from "@/components/resources/files-tab";
 import { NotesTab } from "@/components/resources/notes-tab";
 import { AuditTab } from "@/components/resources/audit-tab";
-import { RESOURCE_ICONS, RESOURCE_COLORS, RESOURCE_LABELS } from "@/lib/icons";
+import { RESOURCE_COLORS, defaultResourceIcon, getIcon, labelForType } from "@/lib/icons";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/common/toast";
 import type {
@@ -137,7 +137,7 @@ export function ResourceDetailPage() {
     );
   }
 
-  const Icon = RESOURCE_ICONS[resource.type];
+  const Icon = getIcon(resource.icon ?? defaultResourceIcon(resource.type));
   const color = RESOURCE_COLORS[resource.type];
   const tags = resource.tags ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
@@ -162,7 +162,7 @@ export function ResourceDetailPage() {
           <div>
             <h1 className="text-lg font-semibold tracking-tight text-ink">{resource.name}</h1>
             <p className="text-sm text-ink-muted">
-              {RESOURCE_LABELS[resource.type]}
+              {labelForType(resource.type)}
               {resource.hostname ? ` · ${resource.hostname}` : ""}
             </p>
           </div>
@@ -215,7 +215,7 @@ export function ResourceDetailPage() {
                   <dl className="space-y-2 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-muted">Type</dt>
-                      <dd className="text-ink">{RESOURCE_LABELS[resource.type]}</dd>
+                      <dd className="text-ink">{labelForType(resource.type)}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-muted">Hostname</dt>

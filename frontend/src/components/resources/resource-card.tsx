@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { KeyRound, FileText, StickyNote, Server } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { RESOURCE_ICONS, RESOURCE_COLORS, RESOURCE_LABELS } from "@/lib/icons";
+import { RESOURCE_COLORS, defaultResourceIcon, getIcon, labelForType } from "@/lib/icons";
 import type { Resource } from "@/types";
 
 export function ResourceCard({ resource }: { resource: Resource }) {
-  const Icon = RESOURCE_ICONS[resource.type] ?? Server;
+  const Icon = getIcon(resource.icon ?? defaultResourceIcon(resource.type));
   const color = RESOURCE_COLORS[resource.type] ?? "#8B949E";
   const tags = resource.tags
     ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -27,7 +27,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                 {resource.name}
               </h3>
               <p className="truncate text-xs text-ink-faint">
-                {RESOURCE_LABELS[resource.type]}
+                {labelForType(resource.type)}
                 {resource.hostname ? ` · ${resource.hostname}` : ""}
               </p>
             </div>
