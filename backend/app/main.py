@@ -9,6 +9,7 @@ from app.api.routes import (
     backup,
     credentials,
     files,
+    icons,
     meta,
     notes,
     resources,
@@ -83,6 +84,7 @@ app.include_router(resources.router, prefix=settings.API_V1_PREFIX)
 app.include_router(credentials.router, prefix=settings.API_V1_PREFIX)
 app.include_router(notes.router, prefix=settings.API_V1_PREFIX)
 app.include_router(files.router, prefix=settings.API_V1_PREFIX)
+app.include_router(icons.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audit.router, prefix=settings.API_V1_PREFIX)
 app.include_router(meta.router, prefix=settings.API_V1_PREFIX)
 app.include_router(settings_routes.router, prefix=settings.API_V1_PREFIX)

@@ -21,9 +21,11 @@ RUN npm run build
 # --- Stage 2: backend + nginx, single runtime image ------------------------
 FROM python:3.12-slim AS final
 
+ARG APP_VERSION=0.2.0
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    APP_VERSION=${APP_VERSION}
 
 WORKDIR /app
 

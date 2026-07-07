@@ -131,3 +131,39 @@ def test_resource_custom_type_website_and_icon(client, auth_headers):
     assert custom.status_code == 200
     assert custom.json()["type"] == "message broker"
     assert custom.json()["icon"] == "network"
+
+
+def test_custom_icon_upload_and_assignment(client, auth_headers):
+    files = {"upload": ("icon.svg", b'<svg xmlns="http://www.w3.org/2000/svg"></svg>', "image/svg+xml")}
+    uploaded = client.post("/api/icons/upload", headers=auth_headers, files=files)
+    assert uploaded.status_code == 200
+    icon_ref = uploaded.json()["icon"]
+    assert icon_ref.startswith("custom:")
+
+    fetched = client.get(uploaded.json()["url"])
+    assert fetched.status_code == 200
+    assert fetched.headers["content-type"].startswith("image/svg+xml")
+
+    created = client.post(
+        "/api/workspaces",
+        headers=auth_headers,
+        json={"name": "Custom Icon Workspace", "icon": icon_ref},
+    )
+    assert created.status_code == 201
+    assert created.json()["icon"] == icon_ref
+
+
+def test_custom_icon_upload_validates_type_and_size(client, auth_headers):
+    bad_type = client.post(
+        "/api/icons/upload",
+        headers=auth_headers,
+        files={"upload": ("icon.txt", b"not an icon", "text/plain")},
+    )
+    assert bad_type.status_code == 400
+
+    too_large = client.post(
+        "/api/icons/upload",
+        headers=auth_headers,
+        files={"upload": ("icon.png", b"0" * (1024 * 1024 + 1), "image/png")},
+    )
+    assert too_large.status_code == 413

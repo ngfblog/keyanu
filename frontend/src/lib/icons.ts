@@ -11,6 +11,11 @@ export const ICONS: Record<string, LucideIcon> = {
 };
 
 export const ICON_OPTIONS = Object.keys(ICONS);
+export function isCustomIcon(iconKey?: string | null): boolean { return Boolean(iconKey?.startsWith("custom:")); }
+export function customIconUrl(iconKey?: string | null): string | undefined {
+  if (!isCustomIcon(iconKey)) return undefined;
+  return `/api/icons/${encodeURIComponent(iconKey!.slice("custom:".length))}`;
+}
 export function getIcon(iconKey?: string | null): LucideIcon { return ICONS[iconKey ?? ""] ?? Folder; }
 
 export const WORKSPACE_TYPES = ["website", "app", "server", "network", "cloud", "database"] as const;

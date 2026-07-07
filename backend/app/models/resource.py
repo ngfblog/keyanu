@@ -10,7 +10,7 @@ class Resource(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     type: Mapped[str] = mapped_column(String(64), nullable=False, default="custom")
-    icon: Mapped[str] = mapped_column(String(32), nullable=True)
+    icon: Mapped[str] = mapped_column(String(255), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     hostname: Mapped[str] = mapped_column(String(255), nullable=True)
     tags: Mapped[str] = mapped_column(String(512), nullable=True)  # comma-separated

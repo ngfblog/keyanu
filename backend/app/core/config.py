@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # --- General ---
     APP_NAME: str = "Keyanu"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.2.0"
     ENVIRONMENT: str = "production"
     API_V1_PREFIX: str = "/api"
 
@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     DATA_DIR: str = "/data"
     DB_FILENAME: str = "keyanu.db"
     FILES_DIR_NAME: str = "files"
+    ICONS_DIR_NAME: str = "icons"
 
     # --- CORS ---
     CORS_ORIGINS: List[str] = ["*"]
@@ -52,6 +53,12 @@ class Settings(BaseSettings):
     @property
     def files_dir_path(self) -> Path:
         path = self.data_dir_path / self.FILES_DIR_NAME
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def icons_dir_path(self) -> Path:
+        path = self.data_dir_path / self.ICONS_DIR_NAME
         path.mkdir(parents=True, exist_ok=True)
         return path
 
