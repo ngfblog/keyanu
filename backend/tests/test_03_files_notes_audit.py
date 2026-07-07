@@ -1,6 +1,7 @@
 def _get_resource_id(client, auth_headers) -> str:
     ws_id = client.get("/api/workspaces", headers=auth_headers).json()[0]["id"]
-    return client.get(f"/api/workspaces/{ws_id}/resources", headers=auth_headers).json()[0]["id"]
+    resources = client.get(f"/api/workspaces/{ws_id}/resources", headers=auth_headers).json()
+    return next(resource["id"] for resource in resources if resource["name"] == "pfSense Firewall")
 
 
 def test_file_upload_download_roundtrip(client, auth_headers):

@@ -91,9 +91,10 @@ def test_restore_requires_confirm_overwrite(client, auth_headers):
 
 def test_restore_same_key_preserves_data_and_revokes_sessions(client, auth_headers):
     before_ws = client.get("/api/workspaces", headers=auth_headers).json()
-    res_id = client.get(
+    resources = client.get(
         f"/api/workspaces/{before_ws[0]['id']}/resources", headers=auth_headers
-    ).json()[0]["id"]
+    ).json()
+    res_id = next(resource["id"] for resource in resources if resource["name"] == "pfSense Firewall")
     before_creds = client.get(f"/api/resources/{res_id}/credentials", headers=auth_headers).json()
 
     export = client.post(

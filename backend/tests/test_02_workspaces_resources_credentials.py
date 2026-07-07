@@ -27,7 +27,7 @@ def test_create_resource(client, auth_headers):
 def _get_resource_id(client, auth_headers) -> str:
     ws_id = _get_workspace_id(client, auth_headers)
     resp = client.get(f"/api/workspaces/{ws_id}/resources", headers=auth_headers)
-    return resp.json()[0]["id"]
+    return next(resource["id"] for resource in resp.json() if resource["name"] == "pfSense Firewall")
 
 
 def test_resource_detail_includes_breadcrumb(client, auth_headers):
