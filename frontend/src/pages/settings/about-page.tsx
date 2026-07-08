@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react";
 import { KeyRound } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { api } from "@/lib/api";
-import type { AboutInfo } from "@/types";
+import { useAboutInfo } from "@/hooks/use-about-info";
 
 export function AboutSettingsPage() {
-  const [about, setAbout] = useState<AboutInfo | null>(null);
-
-  useEffect(() => {
-    api.get<AboutInfo>("/settings/about").then(setAbout);
-  }, []);
+  const about = useAboutInfo();
 
   return (
     <Card>

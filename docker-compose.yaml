@@ -26,6 +26,7 @@ services:
       DATA_DIR: ${DATA_DIR:-/data}
       DEFAULT_SESSION_TIMEOUT_MINUTES: ${DEFAULT_SESSION_TIMEOUT_MINUTES:-720}
       ENVIRONMENT: ${ENVIRONMENT:-development}
+      APP_VERSION: ${APP_VERSION:-dev}
     volumes:
       - keyanu-data:/data
     healthcheck:
