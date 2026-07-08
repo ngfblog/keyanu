@@ -15,7 +15,9 @@ No additional containers, databases or custom Docker networks are required.
 
 # Installation
 
-1. Copy `unraid/keyanu.xml` to:
+Use `unraid/keyanu.xml` as the official working Unraid template. Do **not** install Keyanu from Docker Hub Search in Unraid Apps yet; that path uses Community Applications automatic conversion and is not supported until the Community Applications submission is completed. The automatic conversion can show Python image variables instead of the Keyanu variables listed below.
+
+1. Download or copy `unraid/keyanu.xml` from this repository to:
 
 ```
 /boot/config/plugins/dockerMan/templates-user/
@@ -29,9 +31,22 @@ Docker → Add Container
 
 3. Select the **keyanu** template.
 
-4. Fill in the required configuration values.
+4. Confirm the template shows these fields:
 
-5. Click **Apply**.
+   - Repository
+   - WebUI Port
+   - Appdata
+   - `SECRET_KEY`
+   - `ENCRYPTION_KEY`
+   - `ADMIN_USERNAME`
+   - `ADMIN_PASSWORD`
+   - `DATA_DIR`
+   - `DEFAULT_SESSION_TIMEOUT_MINUTES`
+   - `ENVIRONMENT`
+
+5. Fill in the required configuration values.
+
+6. Click **Apply**.
 
 Unraid will automatically download the latest Keyanu image from Docker Hub and start the container.
 
@@ -194,7 +209,7 @@ You will immediately be prompted to choose a new administrator password.
 
 Update Keyanu like any other Docker container on Unraid by pulling the latest image from Docker Hub.
 
-Your data remains inside the Appdata folder.
+Your data remains inside the Appdata folder. The template keeps `SECRET_KEY`, `ENCRYPTION_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `DATA_DIR`, `DEFAULT_SESSION_TIMEOUT_MINUTES` and `ENVIRONMENT` as explicit Unraid template fields so Edit + Apply and image tag updates preserve user-entered values.
 
 ---
 
