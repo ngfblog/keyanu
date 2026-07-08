@@ -62,7 +62,11 @@ def get_workspace(
     return _to_read(db, workspace)
 
 
-@router.post("/{workspace_id}/icon", response_model=WorkspaceRead)
+@router.post(
+    "/{workspace_id}/icon",
+    response_model=WorkspaceRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_workspace_icon(
     workspace_id: str,
     upload: UploadFile = File(...),

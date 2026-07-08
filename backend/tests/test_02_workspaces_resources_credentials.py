@@ -85,6 +85,28 @@ def test_unauthenticated_requests_are_rejected(client):
     assert resp.status_code == 401
 
 
+def test_workspace_icon_upload_serves_custom_icon(client, auth_headers):
+    ws_id = _get_workspace_id(client, auth_headers)
+    files = {
+        "upload": (
+            "icon.svg",
+            b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>',
+            "image/svg+xml",
+        )
+    }
+
+    resp = client.post(f"/api/workspaces/{ws_id}/icon", headers=auth_headers, files=files)
+
+    assert resp.status_code == 201
+    icon = resp.json()["icon"]
+    assert icon.startswith("custom:")
+
+    icon_filename = icon.removeprefix("custom:")
+    served = client.get(f"/api/icons/{icon_filename}", headers=auth_headers)
+    assert served.status_code == 200
+    assert served.content == files["upload"][1]
+
+
 def test_workspace_update_delete_custom_type_and_icon(client, auth_headers):
     created = client.post(
         "/api/workspaces",
