@@ -131,3 +131,23 @@ def test_resource_custom_type_website_and_icon(client, auth_headers):
     assert custom.status_code == 200
     assert custom.json()["type"] == "message broker"
     assert custom.json()["icon"] == "network"
+
+
+def test_workspace_icon_upload_serves_custom_icon(client, auth_headers):
+    created = client.post(
+        "/api/workspaces/",
+        headers=auth_headers,
+        json={"name": "Icon Test", "type": "app", "icon": "app"},
+    )
+    assert created.status_code == 200
+    upload = client.post(
+        f"/api/workspaces/{created.json()['id']}/icon",
+        headers=auth_headers,
+        files={"upload": ("icon.svg", b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>', "image/svg+xml")},
+    )
+    assert upload.status_code == 200
+    icon = upload.json()["icon"]
+    assert icon.startswith("custom:")
+    served = client.get(f"/api/icons/{icon.removeprefix('custom:')}", headers=auth_headers)
+    assert served.status_code == 200
+    assert served.content.startswith(b"<svg")
