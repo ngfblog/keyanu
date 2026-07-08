@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Container version="2">
   <Name>keyanu</Name>
 
@@ -6,7 +6,7 @@
   <Registry>https://hub.docker.com/r/nirgf/keyanu</Registry>
 
   <Network>bridge</Network>
-  <MyIP/>
+  <MyIP />
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
 
@@ -52,115 +52,34 @@ You will be required to change the password after the first login.
 
   <WebUI>http://[IP]:[PORT:8420]/</WebUI>
 
-  <TemplateURL/>
+  <TemplateURL />
 
   <Icon>https://raw.githubusercontent.com/ngfblog/keyanu/main/unraid/icon.png</Icon>
 
-  <ExtraParams/>
-  <PostArgs/>
-  <CPUset/>
-  <DateInstalled/>
-  <DonateText/>
-  <DonateLink/>
-  <Requires/>
+  <ExtraParams />
+  <PostArgs />
+  <CPUset />
+  <DateInstalled />
+  <DonateText />
+  <DonateLink />
+  <Requires />
 
-  <Config
-    Name="WebUI Port"
-    Target="8420"
-    Default="8420"
-    Mode="tcp"
-    Description="Port used by the Keyanu web interface."
-    Type="Port"
-    Display="always"
-    Required="true"
-    Mask="false">8420</Config>
+  <Config Name="WebUI Port" Target="8420" Default="8420" Mode="tcp" Description="Port used by the Keyanu web interface." Type="Port" Display="always" Required="true" Mask="false">8420</Config>
 
-  <Config
-    Name="Appdata"
-    Target="/data"
-    Default="/mnt/user/appdata/keyanu"
-    Mode="rw"
-    Description="Persistent application data including the database, encrypted secrets, uploaded files and backups. Back up this folder regularly."
-    Type="Path"
-    Display="always"
-    Required="true"
-    Mask="false">/mnt/user/appdata/keyanu</Config>
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/keyanu" Mode="rw" Description="Persistent application data including the database, encrypted secrets, uploaded files and backups. Back up this folder regularly." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/keyanu</Config>
 
-  <Config
-    Name="SECRET_KEY"
-    Target="SECRET_KEY"
-    Default=""
-    Mode=""
-    Description="Required. Protects sessions, authentication and internal application security. Generate with: openssl rand -hex 32. Use a different value than ENCRYPTION_KEY. Store this key safely and keep a backup outside appdata. Leave the value unchanged when editing or updating the container."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="true"></Config>
+  <Config Name="SECRET_KEY" Target="SECRET_KEY" Default="" Mode="" Description="Required. Protects sessions, authentication and internal application security. Generate with: openssl rand -hex 32. Use a different value than ENCRYPTION_KEY. Store this key safely and keep a backup outside appdata. Leave the value unchanged when editing or updating the container." Type="Variable" Display="always" Required="true" Mask="false" />
 
-  <Config
-    Name="ENCRYPTION_KEY"
-    Target="ENCRYPTION_KEY"
-    Default=""
-    Mode=""
-    Description="Required. Encrypts passwords, SSH keys, API tokens, certificates, TOTP secrets and encrypted backups. Generate with: openssl rand -hex 32. Use a different value than SECRET_KEY. Back up this key outside appdata. CRITICAL: never change or lose ENCRYPTION_KEY after data exists; existing encrypted data and 2FA secrets cannot be decrypted without the original value. Leave the value unchanged when editing or updating the container."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="true"></Config>
+  <Config Name="ENCRYPTION_KEY" Target="ENCRYPTION_KEY" Default="" Mode="" Description="Required. Encrypts passwords, SSH keys, API tokens, certificates, TOTP secrets and encrypted backups. Generate with: openssl rand -hex 32. Use a different value than SECRET_KEY. Back up this key outside appdata. CRITICAL: never change or lose ENCRYPTION_KEY after data exists; existing encrypted data and 2FA secrets cannot be decrypted without the original value. Leave the value unchanged when editing or updating the container." Type="Variable" Display="always" Required="true" Mask="false" />
 
-  <Config
-    Name="ADMIN_USERNAME"
-    Target="ADMIN_USERNAME"
-    Default="admin"
-    Mode=""
-    Description="Initial administrator username. Existing user-entered values are preserved when editing or updating the container."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">admin</Config>
+  <Config Name="ADMIN_USERNAME" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Initial administrator username. Existing user-entered values are preserved when editing or updating the container." Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
 
-  <Config
-    Name="ADMIN_PASSWORD"
-    Target="ADMIN_PASSWORD"
-    Default=""
-    Mode=""
-    Description="Temporary administrator password. You will be prompted to change it after first login. Existing user-entered values are preserved when editing or updating the container."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="true"></Config>
+  <Config Name="ADMIN_PASSWORD" Target="ADMIN_PASSWORD" Default="" Mode="" Description="Temporary administrator password. You will be prompted to change it after first login. Existing user-entered values are preserved when editing or updating the container." Type="Variable" Display="always" Required="true" Mask="false" />
 
-  <Config
-    Name="DATA_DIR"
-    Target="DATA_DIR"
-    Default="/data"
-    Mode=""
-    Description="Internal application data directory. Leave unchanged unless you also change the Appdata path."
-    Type="Variable"
-    Display="advanced"
-    Required="true"
-    Mask="false">/data</Config>
+  <Config Name="DATA_DIR" Target="DATA_DIR" Default="/data" Mode="" Description="Internal application data directory. Leave unchanged unless you also change the Appdata path." Type="Variable" Display="advanced" Required="true" Mask="false">/data</Config>
 
-  <Config
-    Name="DEFAULT_SESSION_TIMEOUT_MINUTES"
-    Target="DEFAULT_SESSION_TIMEOUT_MINUTES"
-    Default="720"
-    Mode=""
-    Description="Default idle session timeout in minutes (720 = 12 hours)."
-    Type="Variable"
-    Display="advanced"
-    Required="true"
-    Mask="false">720</Config>
+  <Config Name="DEFAULT_SESSION_TIMEOUT_MINUTES" Target="DEFAULT_SESSION_TIMEOUT_MINUTES" Default="720" Mode="" Description="Default idle session timeout in minutes (720 = 12 hours)." Type="Variable" Display="advanced" Required="true" Mask="false">720</Config>
 
-  <Config
-    Name="ENVIRONMENT"
-    Target="ENVIRONMENT"
-    Default="production"
-    Mode=""
-    Description="Application environment."
-    Type="Variable"
-    Display="advanced"
-    Required="true"
-    Mask="false">production</Config>
+  <Config Name="ENVIRONMENT" Target="ENVIRONMENT" Default="production" Mode="" Description="Application environment." Type="Variable" Display="advanced" Required="true" Mask="false">production</Config>
 
 </Container>
