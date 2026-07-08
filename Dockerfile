@@ -8,12 +8,12 @@
 #   docker build -t nirgf/keyanu:latest .
 
 # --- Stage 1: build the frontend ------------------------------------------
-FROM node:20-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:20-alpine AS frontend-build
 
 WORKDIR /app
 
-COPY frontend/package.json ./
-RUN npm install
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
 
 COPY frontend/ .
 RUN npm run build
