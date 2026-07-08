@@ -22,6 +22,19 @@ def icon_dir_path() -> Path:
     return settings.icons_dir_path
 
 
+def legacy_icon_dir_path() -> Path:
+    """Pre-0.3 custom icon location kept readable for existing installs."""
+    return settings.data_dir_path / "icons"
+
+
+def resolve_icon_path(filename: str) -> Path | None:
+    for root in (icon_dir_path(), legacy_icon_dir_path()):
+        path = root / filename
+        if path.is_file():
+            return path
+    return None
+
+
 def is_custom_icon(value: str | None) -> bool:
     return bool(value and value.startswith(CUSTOM_ICON_PREFIX))
 

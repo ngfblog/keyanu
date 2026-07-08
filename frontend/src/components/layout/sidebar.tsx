@@ -3,6 +3,7 @@ import { LayoutDashboard, KeyRound, Plus, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defaultWorkspaceIcon } from "@/lib/icons";
 import { IconPreview } from "@/components/common/icon-preview";
+import { appVersion } from "@/lib/version";
 import type { Workspace } from "@/types";
 
 export function Sidebar({
@@ -97,7 +98,7 @@ export function Sidebar({
       </div>
 
       <div className="border-t border-border p-3">
-        <p className="text-[11px] text-ink-faint">Keyanu v0.1.0 · Sprint 1</p>
+        <p className="text-[11px] text-ink-faint">{`Keyanu v${appVersion}`}</p>
       </div>
     </div>
   );

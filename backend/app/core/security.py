@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 import pyotp
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -96,7 +96,10 @@ def decrypt_secret(ciphertext: str) -> str:
     """Decrypt a value previously produced by encrypt_secret."""
     if not ciphertext:
         return ""
-    return _fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+    try:
+        return _fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+    except InvalidToken as exc:
+        raise ValueError("Encrypted data could not be decrypted. Confirm Keyanu is using the original ENCRYPTION_KEY from appdata or your container configuration.") from exc
 
 
 def encryption_key_fingerprint() -> str:
