@@ -83,7 +83,11 @@ def get_resource(
     return ResourceDetail(**base.model_dump(), workspace_name=resource.workspace.name)
 
 
-@router.post("/resources/{resource_id}/icon", response_model=ResourceRead)
+@router.post(
+    "/resources/{resource_id}/icon",
+    response_model=ResourceRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_resource_icon(
     resource_id: str,
     upload: UploadFile = File(...),
