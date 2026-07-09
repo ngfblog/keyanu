@@ -80,6 +80,36 @@ def test_credential_rename(client, auth_headers):
     assert resp.json()["name"] == "Root SSH"
 
 
+def test_credential_update_preserves_unspecified_encrypted_fields(client, auth_headers):
+    res_id = _get_resource_id(client, auth_headers)
+    created = client.post(
+        f"/api/resources/{res_id}/credentials",
+        headers=auth_headers,
+        json={
+            "name": "Runbook note",
+            "template": "secure_note",
+            "fields": {"title": "Original", "body": "original content", "notes": "unchanged"},
+        },
+    )
+    assert created.status_code == 201
+    cred_id = created.json()["id"]
+
+    updated = client.put(
+        f"/api/credentials/{cred_id}",
+        headers=auth_headers,
+        json={"fields": {"body": "updated content"}},
+    )
+    assert updated.status_code == 200
+
+    reveal = client.post(f"/api/credentials/{cred_id}/reveal", headers=auth_headers)
+    assert reveal.status_code == 200
+    assert reveal.json()["fields"] == {
+        "title": "Original",
+        "body": "updated content",
+        "notes": "unchanged",
+    }
+
+
 def test_unauthenticated_requests_are_rejected(client):
     resp = client.get("/api/workspaces")
     assert resp.status_code == 401
