@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # --- General ---
     APP_NAME: str = "Keyanu"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "dev"
     ENVIRONMENT: str = "production"
     API_V1_PREFIX: str = "/api"
 

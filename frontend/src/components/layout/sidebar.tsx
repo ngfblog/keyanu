@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, KeyRound, Plus, Folder } from "lucide-react";
+import { LayoutDashboard, KeyRound, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defaultWorkspaceIcon } from "@/lib/icons";
 import { IconPreview } from "@/components/common/icon-preview";
+import { useAboutInfo } from "@/hooks/use-about-info";
 import type { Workspace } from "@/types";
 
 export function Sidebar({
@@ -16,6 +17,8 @@ export function Sidebar({
   mobile?: boolean;
   onNavigate?: () => void;
 }) {
+  const aboutInfo = useAboutInfo();
+
   return (
     <div className={cn("flex h-full w-64 flex-col border-r border-border bg-surface", mobile && "w-full")}>
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
@@ -97,7 +100,9 @@ export function Sidebar({
       </div>
 
       <div className="border-t border-border p-3">
-        <p className="text-[11px] text-ink-faint">Keyanu v0.1.0 · Sprint 1</p>
+        <p className="text-[11px] text-ink-faint">
+          {aboutInfo ? `${aboutInfo.app_name} v${aboutInfo.version}` : "Keyanu v—"}
+        </p>
       </div>
     </div>
   );
