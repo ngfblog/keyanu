@@ -13,7 +13,7 @@ class CredentialCreate(BaseModel):
 
 class CredentialUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=128)
-    fields: dict[str, str] | None = None
+    fields: dict[str, str | None] | None = None
 
 
 class CredentialRead(BaseModel):

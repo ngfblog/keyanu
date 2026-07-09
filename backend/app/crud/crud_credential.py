@@ -61,7 +61,11 @@ def update_credential(db: Session, credential: Credential, data: CredentialUpdat
         credential.name = data.name
     if data.fields is not None:
         existing = _decode_fields(credential.encrypted_data)
-        existing.update(data.fields)
+        for key, value in data.fields.items():
+            if value is None:
+                existing.pop(key, None)
+            else:
+                existing[key] = value
         encrypted, summary = _encode_fields(credential.template, existing)
         credential.encrypted_data = encrypted
         credential.summary = summary
