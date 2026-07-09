@@ -109,6 +109,20 @@ def test_credential_update_preserves_unspecified_encrypted_fields(client, auth_h
         "notes": "unchanged",
     }
 
+    removed = client.put(
+        f"/api/credentials/{cred_id}",
+        headers=auth_headers,
+        json={"fields": {"notes": None}},
+    )
+    assert removed.status_code == 200
+
+    reveal_after_remove = client.post(f"/api/credentials/{cred_id}/reveal", headers=auth_headers)
+    assert reveal_after_remove.status_code == 200
+    assert reveal_after_remove.json()["fields"] == {
+        "title": "Original",
+        "body": "updated content",
+    }
+
 
 def test_unauthenticated_requests_are_rejected(client):
     resp = client.get("/api/workspaces")
