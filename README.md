@@ -192,24 +192,11 @@ For more information see:
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guide |
 
----
-
 # Support
 
-## GitHub
-
-https://github.com/ngfblog/keyanu
-
-## Docker Hub
-
-https://hub.docker.com/r/nirgf/keyanu
-
-## Issues
-
-https://github.com/ngfblog/keyanu/issues
-
----
-
+- **GitHub:** https://github.com/ngfblog/keyanu
+- **Docker Hub:** https://hub.docker.com/r/nirgf/keyanu
+- **Issues:** https://github.com/ngfblog/keyanu/issues
 ## ❤️ Support
 
 If my projects have helped you or saved you time, please consider supporting future development.
