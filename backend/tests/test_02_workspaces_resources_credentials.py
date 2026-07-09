@@ -58,6 +58,36 @@ def test_credential_create_encrypted_and_reveal(client, auth_headers):
     assert reveal.json()["fields"] == {"username": "root", "password": "hunter2"}
 
 
+def test_credential_update_preserves_unspecified_encrypted_fields(client, auth_headers):
+    res_id = _get_resource_id(client, auth_headers)
+    created = client.post(
+        f"/api/resources/{res_id}/credentials",
+        headers=auth_headers,
+        json={
+            "name": "Editable note",
+            "template": "secure_note",
+            "fields": {"title": "Original", "body": "keep me", "notes": "unchanged"},
+        },
+    )
+    assert created.status_code == 201
+    cred_id = created.json()["id"]
+
+    updated = client.put(
+        f"/api/credentials/{cred_id}",
+        headers=auth_headers,
+        json={"fields": {"body": "updated content"}},
+    )
+
+    assert updated.status_code == 200
+    reveal = client.post(f"/api/credentials/{cred_id}/reveal", headers=auth_headers)
+    assert reveal.status_code == 200
+    assert reveal.json()["fields"] == {
+        "title": "Original",
+        "body": "updated content",
+        "notes": "unchanged",
+    }
+
+
 def test_credential_detail_endpoint_has_full_breadcrumb(client, auth_headers):
     res_id = _get_resource_id(client, auth_headers)
     creds = client.get(f"/api/resources/{res_id}/credentials", headers=auth_headers).json()

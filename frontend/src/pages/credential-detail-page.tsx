@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { CredentialFieldsPanel } from "@/components/credentials/credential-fields-panel";
 import { CredentialRenameDialog } from "@/components/credentials/credential-rename-dialog";
+import { CredentialEditDialog } from "@/components/credentials/credential-edit-dialog";
 import { AuditTab } from "@/components/resources/audit-tab";
 import { getCredentialIcon, CREDENTIAL_COLORS } from "@/lib/icons";
 import { api, ApiError } from "@/lib/api";
@@ -27,6 +28,7 @@ export function CredentialDetailPage() {
   const [tab, setTab] = useState<TabId>("overview");
   const [loading, setLoading] = useState(true);
 
+  const [editOpen, setEditOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -107,6 +109,10 @@ export function CredentialDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
+          </Button>
           <Button variant="secondary" size="sm" onClick={() => setRenameOpen(true)}>
             <Pencil className="h-3.5 w-3.5" />
             Rename
@@ -134,7 +140,7 @@ export function CredentialDetailPage() {
           <TabsContent value="overview" className="space-y-4">
             <Card>
               <CardContent className="pt-4">
-                <CredentialFieldsPanel credentialId={credential.id} definition={definition} />
+                <CredentialFieldsPanel key={credential.updated_at} credentialId={credential.id} definition={definition} />
               </CardContent>
             </Card>
 
@@ -172,6 +178,17 @@ export function CredentialDetailPage() {
           </TabsContent>
         </div>
       </Tabs>
+
+      <CredentialEditDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        credential={credential}
+        template={definition}
+        onSaved={(updated) => {
+          setCredential({ ...credential, ...updated });
+          loadAll();
+        }}
+      />
 
       <CredentialRenameDialog
         open={renameOpen}
