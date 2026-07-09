@@ -107,6 +107,44 @@ def test_workspace_icon_upload_serves_custom_icon(client, auth_headers):
     assert served.content == files["upload"][1]
 
 
+def test_resource_icon_upload_serves_custom_png_icon(client, auth_headers):
+    routes = {getattr(route, "path", "") for route in client.app.routes}
+    assert "/api/icons/{filename}" in routes
+
+    ws_id = _get_workspace_id(client, auth_headers)
+    resource = client.post(
+        f"/api/workspaces/{ws_id}/resources",
+        headers=auth_headers,
+        json={"name": "Icon Test Host", "type": "server", "hostname": "icon-test.local"},
+    )
+    assert resource.status_code == 201
+    res_id = resource.json()["id"]
+    png_bytes = (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+        b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc````\x00\x00\x00"
+        b"\x05\x00\x01\x0d\x0a-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    files = {"upload": ("icon.png", png_bytes, "image/png")}
+
+    uploaded = client.post(f"/api/resources/{res_id}/icon", headers=auth_headers, files=files)
+
+    assert uploaded.status_code == 201
+    icon = uploaded.json()["icon"]
+    assert icon.startswith("custom:")
+    icon_filename = icon.removeprefix("custom:")
+
+    from app.core.config import settings
+
+    icon_path = settings.icons_dir_path / icon_filename
+    assert icon_path.is_file()
+    assert icon_path.read_bytes() == png_bytes
+
+    served = client.get(f"/api/icons/{icon_filename}", headers=auth_headers)
+    assert served.status_code == 200
+    assert served.headers["content-type"] == "image/png"
+    assert served.content == png_bytes
+
+
 def test_workspace_update_delete_custom_type_and_icon(client, auth_headers):
     created = client.post(
         "/api/workspaces",
