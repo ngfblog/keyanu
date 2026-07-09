@@ -4,16 +4,20 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import decrypt_secret, encrypt_secret
-from app.core.templates import all_field_keys, build_summary, get_template_definition
+from app.core.templates import build_summary, get_template_definition
 from app.models.credential import Credential
 from app.schemas.credential import CredentialCreate, CredentialUpdate
 
 
 def _encode_fields(template, fields: dict[str, str]) -> tuple[str, str]:
-    """Filter fields to the ones defined by the template, encrypt as JSON, and
-    return (encrypted_blob, summary)."""
-    allowed_keys = set(all_field_keys(template))
-    clean_fields = {k: v for k, v in fields.items() if k in allowed_keys and v is not None}
+    """Encrypt credential fields as JSON and return (encrypted_blob, summary).
+
+    Credential payloads may contain fields that are no longer present in the
+    current template definition. Keep those values when re-encrypting so partial
+    updates and backup/restore round trips do not discard previously stored
+    secrets.
+    """
+    clean_fields = {k: v for k, v in fields.items() if v is not None}
     encrypted = encrypt_secret(json.dumps(clean_fields))
     summary = build_summary(template, clean_fields)
     return encrypted, summary
