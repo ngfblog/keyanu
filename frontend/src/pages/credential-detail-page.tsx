@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { CredentialFieldsPanel } from "@/components/credentials/credential-fields-panel";
 import { CredentialRenameDialog } from "@/components/credentials/credential-rename-dialog";
+import { CredentialEditDialog } from "@/components/credentials/credential-edit-dialog";
 import { AuditTab } from "@/components/resources/audit-tab";
 import { getCredentialIcon, CREDENTIAL_COLORS } from "@/lib/icons";
 import { api, ApiError } from "@/lib/api";
@@ -24,9 +25,12 @@ export function CredentialDetailPage() {
   const [credential, setCredential] = useState<CredentialDetailType | null>(null);
   const [definition, setDefinition] = useState<TemplateDefinition | undefined>(undefined);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
+  const [templates, setTemplates] = useState<TemplateDefinition[]>([]);
   const [tab, setTab] = useState<TabId>("overview");
+  const [fieldsRefreshKey, setFieldsRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [editOpen, setEditOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -41,6 +45,7 @@ export function CredentialDetailPage() {
         api.get<AuditLogEntry[]>(`/credentials/${credentialId}/audit`),
       ]);
       setCredential(cred);
+      setTemplates(templates);
       setDefinition(templates.find((t) => t.id === cred.template));
       setAudit(auditEntries);
     } catch (err) {
@@ -53,6 +58,11 @@ export function CredentialDetailPage() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  async function handleEditSaved() {
+    await loadAll();
+    setFieldsRefreshKey((key) => key + 1);
+  }
 
   async function handleDelete() {
     if (!credential) return;
@@ -107,6 +117,10 @@ export function CredentialDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
+          </Button>
           <Button variant="secondary" size="sm" onClick={() => setRenameOpen(true)}>
             <Pencil className="h-3.5 w-3.5" />
             Rename
@@ -134,7 +148,7 @@ export function CredentialDetailPage() {
           <TabsContent value="overview" className="space-y-4">
             <Card>
               <CardContent className="pt-4">
-                <CredentialFieldsPanel credentialId={credential.id} definition={definition} />
+                <CredentialFieldsPanel key={fieldsRefreshKey} credentialId={credential.id} definition={definition} />
               </CardContent>
             </Card>
 
@@ -172,6 +186,14 @@ export function CredentialDetailPage() {
           </TabsContent>
         </div>
       </Tabs>
+
+      <CredentialEditDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        credential={credential}
+        templates={templates}
+        onSaved={handleEditSaved}
+      />
 
       <CredentialRenameDialog
         open={renameOpen}
