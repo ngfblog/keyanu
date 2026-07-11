@@ -15,6 +15,7 @@ export type AuditAction =
   | "create"
   | "update"
   | "delete"
+  | "move"
   | "view_secret"
   | "login"
   | "login_failed";

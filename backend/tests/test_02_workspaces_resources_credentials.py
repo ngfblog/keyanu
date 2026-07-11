@@ -235,3 +235,129 @@ def test_resource_custom_type_website_and_icon(client, auth_headers):
     assert custom.status_code == 200
     assert custom.json()["type"] == "message broker"
     assert custom.json()["icon"] == "network"
+
+
+def test_move_resource_preserves_related_data_and_audit(client, auth_headers):
+    workspace_a = client.post(
+        "/api/workspaces", headers=auth_headers, json={"name": "Infrastructure"}
+    ).json()
+    workspace_b = client.post(
+        "/api/workspaces", headers=auth_headers, json={"name": "Network"}
+    ).json()
+
+    created = client.post(
+        f"/api/workspaces/{workspace_a['id']}/resources",
+        headers=auth_headers,
+        json={"name": "pfSense", "type": "pfsense", "hostname": "10.0.0.1"},
+    )
+    assert created.status_code == 201
+    resource = created.json()
+    resource_id = resource["id"]
+
+    credential = client.post(
+        f"/api/resources/{resource_id}/credentials",
+        headers=auth_headers,
+        json={
+            "name": "Admin login",
+            "template": "password",
+            "fields": {"username": "root", "password": "hunter2"},
+        },
+    )
+    assert credential.status_code == 201
+
+    note = client.post(
+        f"/api/resources/{resource_id}/notes",
+        headers=auth_headers,
+        json={"title": "Runbook", "content": "do not reboot during business hours"},
+    )
+    assert note.status_code == 201
+
+    file_payload = {"upload": ("config.txt", b"backup config", "text/plain")}
+    uploaded_file = client.post(
+        f"/api/resources/{resource_id}/files", headers=auth_headers, files=file_payload
+    )
+    assert uploaded_file.status_code == 201
+
+    icon_payload = {
+        "upload": (
+            "icon.svg",
+            b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>',
+            "image/svg+xml",
+        )
+    }
+    uploaded_icon = client.post(
+        f"/api/resources/{resource_id}/icon", headers=auth_headers, files=icon_payload
+    )
+    assert uploaded_icon.status_code == 201
+    icon = uploaded_icon.json()["icon"]
+
+    audit_before = client.get(f"/api/resources/{resource_id}/audit", headers=auth_headers).json()
+    assert audit_before
+
+    same_workspace = client.post(
+        f"/api/resources/{resource_id}/move",
+        headers=auth_headers,
+        json={"destination_workspace_id": workspace_a["id"]},
+    )
+    assert same_workspace.status_code == 400
+    assert same_workspace.json()["detail"] == "Destination Workspace equals current Workspace"
+
+    missing_workspace = client.post(
+        f"/api/resources/{resource_id}/move",
+        headers=auth_headers,
+        json={"destination_workspace_id": "missing-workspace"},
+    )
+    assert missing_workspace.status_code == 404
+    assert missing_workspace.json()["detail"] == "Destination Workspace not found"
+
+    moved = client.post(
+        f"/api/resources/{resource_id}/move",
+        headers=auth_headers,
+        json={"destination_workspace_id": workspace_b["id"]},
+    )
+    assert moved.status_code == 200
+    assert moved.json()["id"] == resource_id
+    assert moved.json()["workspace_id"] == workspace_b["id"]
+    assert moved.json()["icon"] == icon
+
+    workspace_a_resources = client.get(
+        f"/api/workspaces/{workspace_a['id']}/resources", headers=auth_headers
+    ).json()
+    workspace_b_resources = client.get(
+        f"/api/workspaces/{workspace_b['id']}/resources", headers=auth_headers
+    ).json()
+    assert all(item["id"] != resource_id for item in workspace_a_resources)
+    assert any(item["id"] == resource_id for item in workspace_b_resources)
+
+    detail = client.get(f"/api/resources/{resource_id}", headers=auth_headers).json()
+    assert detail["id"] == resource_id
+    assert detail["workspace_id"] == workspace_b["id"]
+    assert detail["workspace_name"] == "Network"
+    assert detail["credential_count"] == 1
+    assert detail["file_count"] == 1
+    assert detail["note_count"] == 1
+    assert detail["icon"] == icon
+
+    creds = client.get(f"/api/resources/{resource_id}/credentials", headers=auth_headers).json()
+    assert creds[0]["id"] == credential.json()["id"]
+    reveal = client.post(f"/api/credentials/{creds[0]['id']}/reveal", headers=auth_headers)
+    assert reveal.json()["fields"] == {"username": "root", "password": "hunter2"}
+
+    notes = client.get(f"/api/resources/{resource_id}/notes", headers=auth_headers).json()
+    assert notes[0]["id"] == note.json()["id"]
+    files = client.get(f"/api/resources/{resource_id}/files", headers=auth_headers).json()
+    assert files[0]["id"] == uploaded_file.json()["id"]
+
+    audit_after = client.get(f"/api/resources/{resource_id}/audit", headers=auth_headers).json()
+    actions = [entry["action"] for entry in audit_after]
+    assert "move" in actions
+    assert set(entry["id"] for entry in audit_before).issubset(
+        {entry["id"] for entry in audit_after}
+    )
+    move_entry = next(entry for entry in audit_after if entry["action"] == "move")
+    assert move_entry["entity_name"] == "pfSense"
+    assert resource_id == move_entry["entity_id"]
+    assert "Infrastructure" in move_entry["detail"]
+    assert "Network" in move_entry["detail"]
+    assert move_entry["user_id"] is not None
+    assert move_entry["created_at"] is not None
