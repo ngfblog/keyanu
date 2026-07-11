@@ -21,6 +21,11 @@ class ResourceMove(BaseModel):
     destination_workspace_id: str = Field(..., min_length=1)
 
 
+class ResourceDuplicate(BaseModel):
+    destination_workspace_id: str | None = Field(default=None, min_length=1)
+    name: str | None = Field(default=None, min_length=1, max_length=128)
+
+
 class ResourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=128)
     type: str | None = Field(default=None, min_length=1, max_length=64)
