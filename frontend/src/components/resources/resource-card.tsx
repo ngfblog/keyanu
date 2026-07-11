@@ -1,39 +1,59 @@
 import { Link } from "react-router-dom";
-import { KeyRound, FileText, StickyNote, Server } from "lucide-react";
+import { Copy, FileText, KeyRound, StickyNote } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { RESOURCE_COLORS, defaultResourceIcon, labelForType } from "@/lib/icons";
 import { IconPreview } from "@/components/common/icon-preview";
 import type { Resource } from "@/types";
 
-export function ResourceCard({ resource }: { resource: Resource }) {
+interface ResourceCardProps {
+  resource: Resource;
+  onDuplicate?: (resource: Resource) => void;
+}
+
+export function ResourceCard({ resource, onDuplicate }: ResourceCardProps) {
   const color = RESOURCE_COLORS[resource.type] ?? "#8B949E";
   const tags = resource.tags
     ? resource.tags.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
 
   return (
-    <Link to={`/resources/${resource.id}`} className="group block">
-      <Card className="flex h-full flex-col gap-3 p-4 transition-all duration-150 hover:border-brass/40 hover:shadow-elevated">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-              style={{ backgroundColor: `${color}1A`, color }}
-            >
-              <IconPreview icon={resource.icon} fallback={defaultResourceIcon(resource.type)} className="h-[18px] w-[18px]" />
-            </span>
-            <div className="min-w-0">
-              <h3 className="truncate text-sm font-semibold text-ink group-hover:text-brass transition-colors">
-                {resource.name}
-              </h3>
-              <p className="truncate text-xs text-ink-faint">
-                {labelForType(resource.type)}
-                {resource.hostname ? ` · ${resource.hostname}` : ""}
-              </p>
-            </div>
+    <Card className="group flex h-full flex-col gap-3 p-4 transition-all duration-150 hover:border-brass/40 hover:shadow-elevated">
+      <div className="flex items-start justify-between gap-2">
+        <Link to={`/resources/${resource.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+            style={{ backgroundColor: `${color}1A`, color }}
+          >
+            <IconPreview icon={resource.icon} fallback={defaultResourceIcon(resource.type)} className="h-[18px] w-[18px]" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate text-sm font-semibold text-ink transition-colors group-hover:text-brass">
+              {resource.name}
+            </h3>
+            <p className="truncate text-xs text-ink-faint">
+              {labelForType(resource.type)}
+              {resource.hostname ? ` · ${resource.hostname}` : ""}
+            </p>
           </div>
-        </div>
+        </Link>
+        {onDuplicate && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onDuplicate(resource)}
+            aria-label={`Duplicate ${resource.name}`}
+            title="Duplicate resource"
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4" />
+            <span className="sr-only sm:not-sr-only">Duplicate</span>
+          </Button>
+        )}
+      </div>
 
+      <Link to={`/resources/${resource.id}`} className="flex flex-1 flex-col gap-3">
         {resource.description && (
           <p className="line-clamp-2 text-xs text-ink-muted">{resource.description}</p>
         )}
@@ -65,7 +85,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
             {resource.note_count}
           </span>
         </div>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 }
