@@ -12,6 +12,7 @@ import {
   LayoutList,
   Globe,
   Tag,
+  MoveRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/common/empty-state";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ResourceDialog } from "@/components/resources/resource-dialog";
+import { ResourceMoveDialog } from "@/components/resources/resource-move-dialog";
 import { CredentialCard } from "@/components/credentials/credential-card";
 import { CredentialCreateDialog } from "@/components/credentials/credential-create-dialog";
 import { FilesTab } from "@/components/resources/files-tab";
@@ -64,6 +66,7 @@ export function ResourceDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [createCredOpen, setCreateCredOpen] = useState(false);
 
@@ -168,6 +171,10 @@ export function ResourceDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setMoveOpen(true)}>
+            <MoveRight className="h-3.5 w-3.5" />
+            Move to Workspace
+          </Button>
           <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
             <Pencil className="h-3.5 w-3.5" />
             Edit
@@ -321,6 +328,17 @@ export function ResourceDetailPage() {
         onSaved={(updated) => setResource({ ...resource, ...updated })}
         workspaceId={resource.workspace_id}
         resource={resource}
+      />
+
+      <ResourceMoveDialog
+        open={moveOpen}
+        resource={resource}
+        onClose={() => setMoveOpen(false)}
+        onMoved={(moved) => {
+          setResource({ ...resource, ...moved, workspace_name: null });
+          notify("Resource moved successfully.");
+          navigate(`/workspaces/${moved.workspace_id}`);
+        }}
       />
 
       <ConfirmDialog

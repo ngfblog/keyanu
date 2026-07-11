@@ -1,4 +1,4 @@
-import { History, KeyRound, FileText, StickyNote, Server, LogIn, Eye, Plus, Pencil, Trash2 } from "lucide-react";
+import { History, LogIn, Eye, Plus, Pencil, Trash2, MoveRight } from "lucide-react";
 import { EmptyState } from "@/components/common/empty-state";
 import { usePreferences } from "@/store/preferences-context";
 import { formatDateTime } from "@/lib/datetime";
@@ -8,6 +8,7 @@ const ACTION_ICON: Record<AuditAction, typeof Plus> = {
   create: Plus,
   update: Pencil,
   delete: Trash2,
+  move: MoveRight,
   view_secret: Eye,
   login: LogIn,
   login_failed: LogIn,
@@ -17,6 +18,7 @@ const ACTION_LABEL: Record<AuditAction, string> = {
   create: "created",
   update: "updated",
   delete: "deleted",
+  move: "moved",
   view_secret: "revealed",
   login: "signed in",
   login_failed: "failed to sign in",

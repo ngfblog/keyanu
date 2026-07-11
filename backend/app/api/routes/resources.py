@@ -7,7 +7,7 @@ from app.db.session import get_db
 from app.models.enums import AuditAction
 from app.models.user import User
 from app.core.icon_files import delete_icon_reference, save_uploaded_icon
-from app.schemas.resource import ResourceCreate, ResourceDetail, ResourceRead, ResourceUpdate
+from app.schemas.resource import ResourceCreate, ResourceDetail, ResourceMove, ResourceRead, ResourceUpdate
 
 router = APIRouter(tags=["resources"])
 
@@ -110,6 +110,46 @@ async def upload_resource_icon(
         user_id=current_user.id,
         resource_id=resource.id,
         workspace_id=resource.workspace_id,
+    )
+    return _to_read(db, resource)
+
+
+@router.post("/resources/{resource_id}/move", response_model=ResourceRead)
+def move_resource(
+    resource_id: str,
+    payload: ResourceMove,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ResourceRead:
+    resource = get_owned_resource_or_404(db, resource_id, current_user.id)
+    source_workspace = resource.workspace
+    destination_workspace = crud_workspace.get_workspace(
+        db, payload.destination_workspace_id, current_user.id
+    )
+    if not destination_workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Destination Workspace not found"
+        )
+    if destination_workspace.id == resource.workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Destination Workspace equals current Workspace",
+        )
+
+    resource = crud_resource.move_resource(db, resource, destination_workspace.id)
+    crud_audit.log(
+        db,
+        action=AuditAction.MOVE,
+        entity_type="resource",
+        entity_id=resource.id,
+        entity_name=resource.name,
+        detail=(
+            f'Resource moved from "{source_workspace.name}" '
+            f'to "{destination_workspace.name}" by {current_user.username}'
+        ),
+        user_id=current_user.id,
+        resource_id=resource.id,
+        workspace_id=destination_workspace.id,
     )
     return _to_read(db, resource)
 

@@ -38,6 +38,14 @@ def update_resource(db: Session, resource: Resource, data: ResourceUpdate) -> Re
     return resource
 
 
+def move_resource(db: Session, resource: Resource, destination_workspace_id: str) -> Resource:
+    resource.workspace_id = destination_workspace_id
+    db.add(resource)
+    db.commit()
+    db.refresh(resource)
+    return resource
+
+
 def delete_resource(db: Session, resource: Resource) -> None:
     db.delete(resource)
     db.commit()
