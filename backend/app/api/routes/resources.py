@@ -7,7 +7,14 @@ from app.db.session import get_db
 from app.models.enums import AuditAction
 from app.models.user import User
 from app.core.icon_files import delete_icon_reference, save_uploaded_icon
-from app.schemas.resource import ResourceCreate, ResourceDetail, ResourceMove, ResourceRead, ResourceUpdate
+from app.schemas.resource import (
+    ResourceCreate,
+    ResourceDetail,
+    ResourceDuplicate,
+    ResourceMove,
+    ResourceRead,
+    ResourceUpdate,
+)
 
 router = APIRouter(tags=["resources"])
 
@@ -152,6 +159,49 @@ def move_resource(
         workspace_id=destination_workspace.id,
     )
     return _to_read(db, resource)
+
+
+@router.post(
+    "/resources/{resource_id}/duplicate",
+    response_model=ResourceRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def duplicate_resource(
+    resource_id: str,
+    payload: ResourceDuplicate | None = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ResourceRead:
+    resource = get_owned_resource_or_404(db, resource_id, current_user.id)
+    destination_workspace_id = resource.workspace_id
+    if payload and payload.destination_workspace_id:
+        destination_workspace_id = payload.destination_workspace_id
+    destination_workspace = crud_workspace.get_workspace(
+        db, destination_workspace_id, current_user.id
+    )
+    if not destination_workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Destination Workspace not found"
+        )
+
+    duplicate = crud_resource.duplicate_resource(
+        db,
+        resource,
+        destination_workspace.id,
+        name=payload.name if payload else None,
+    )
+    crud_audit.log(
+        db,
+        action=AuditAction.CREATE,
+        entity_type="resource",
+        entity_id=duplicate.id,
+        entity_name=duplicate.name,
+        detail=f'Duplicated from "{resource.name}"',
+        user_id=current_user.id,
+        resource_id=duplicate.id,
+        workspace_id=duplicate.workspace_id,
+    )
+    return _to_read(db, duplicate)
 
 
 @router.put("/resources/{resource_id}", response_model=ResourceRead)

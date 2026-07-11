@@ -7,7 +7,11 @@ from app.schemas.workspace import WorkspaceCreate, WorkspaceUpdate
 
 
 def list_workspaces(db: Session, owner_id: str) -> list[Workspace]:
-    stmt = select(Workspace).where(Workspace.owner_id == owner_id).order_by(Workspace.name)
+    stmt = (
+        select(Workspace)
+        .where(Workspace.owner_id == owner_id)
+        .order_by(Workspace.created_at, Workspace.id)
+    )
     return list(db.execute(stmt).scalars().all())
 
 
