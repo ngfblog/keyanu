@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/common/empty-state";
 import { ResourceCard } from "@/components/resources/resource-card";
 import { ResourceDialog } from "@/components/resources/resource-dialog";
+import { ResourceDuplicateDialog } from "@/components/resources/resource-duplicate-dialog";
 import { WorkspaceDialog } from "@/components/layout/workspace-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { useToast } from "@/components/common/toast";
@@ -28,6 +29,7 @@ export function ResourcesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [resourceToDuplicate, setResourceToDuplicate] = useState<Resource | null>(null);
 
   const workspace = workspaces.find((w) => w.id === workspaceId);
 
@@ -60,6 +62,12 @@ export function ResourcesPage() {
   }
 
   async function handleSaved() {
+    await load();
+    await refreshWorkspaces();
+  }
+
+  async function handleDuplicated(duplicate: Resource) {
+    notify(`Duplicated ${duplicate.name}`);
     await load();
     await refreshWorkspaces();
   }
@@ -128,7 +136,7 @@ export function ResourcesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((resource) => (
-            <ResourceCard key={resource.id} resource={resource} />
+            <ResourceCard key={resource.id} resource={resource} onDuplicate={setResourceToDuplicate} />
           ))}
         </div>
       )}
@@ -139,6 +147,14 @@ export function ResourcesPage() {
       {workspace && (
         <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteWorkspace} title="Delete workspace?" description="This will permanently delete the workspace and its resources." confirmLabel="Delete workspace" destructive />
       )}
+
+      <ResourceDuplicateDialog
+        open={resourceToDuplicate !== null}
+        resource={resourceToDuplicate}
+        workspaces={workspaces}
+        onClose={() => setResourceToDuplicate(null)}
+        onDuplicated={handleDuplicated}
+      />
 
       {workspaceId && (
         <ResourceDialog
