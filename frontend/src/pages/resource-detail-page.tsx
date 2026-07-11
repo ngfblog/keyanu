@@ -13,6 +13,7 @@ import {
   Globe,
   Tag,
   MoveRight,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ResourceDialog } from "@/components/resources/resource-dialog";
 import { ResourceMoveDialog } from "@/components/resources/resource-move-dialog";
+import { ResourceDuplicateDialog } from "@/components/resources/resource-duplicate-dialog";
 import { CredentialCard } from "@/components/credentials/credential-card";
 import { CredentialCreateDialog } from "@/components/credentials/credential-create-dialog";
 import { FilesTab } from "@/components/resources/files-tab";
@@ -67,6 +69,7 @@ export function ResourceDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [createCredOpen, setCreateCredOpen] = useState(false);
 
@@ -171,13 +174,17 @@ export function ResourceDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setMoveOpen(true)}>
-            <MoveRight className="h-3.5 w-3.5" />
-            Move to Workspace
-          </Button>
           <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
             <Pencil className="h-3.5 w-3.5" />
             Edit
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setDuplicateOpen(true)}>
+            <Copy className="h-3.5 w-3.5" />
+            Duplicate
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setMoveOpen(true)}>
+            <MoveRight className="h-3.5 w-3.5" />
+            Move to Workspace
           </Button>
           <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="h-3.5 w-3.5" />
@@ -328,6 +335,16 @@ export function ResourceDetailPage() {
         onSaved={(updated) => setResource({ ...resource, ...updated })}
         workspaceId={resource.workspace_id}
         resource={resource}
+      />
+
+      <ResourceDuplicateDialog
+        open={duplicateOpen}
+        resource={resource}
+        onClose={() => setDuplicateOpen(false)}
+        onDuplicated={(duplicated) => {
+          notify("Resource duplicated successfully.");
+          navigate(`/resources/${duplicated.id}`);
+        }}
       />
 
       <ResourceMoveDialog

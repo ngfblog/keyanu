@@ -21,6 +21,16 @@ class ResourceMove(BaseModel):
     destination_workspace_id: str = Field(..., min_length=1)
 
 
+class ResourceDuplicate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=128)
+    destination_workspace_id: str = Field(..., min_length=1)
+    copy_credentials: bool = True
+    copy_notes: bool = True
+    copy_files: bool = True
+    copy_icon: bool = True
+    copy_tags: bool = True
+
+
 class ResourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=128)
     type: str | None = Field(default=None, min_length=1, max_length=64)
