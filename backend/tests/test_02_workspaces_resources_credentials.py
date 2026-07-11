@@ -361,3 +361,148 @@ def test_move_resource_preserves_related_data_and_audit(client, auth_headers):
     assert "Network" in move_entry["detail"]
     assert move_entry["user_id"] is not None
     assert move_entry["created_at"] is not None
+
+
+def _create_duplicate_source(client, auth_headers, name="Duplicate Source"):
+    workspace_a = client.post("/api/workspaces", headers=auth_headers, json={"name": f"{name} A"}).json()
+    workspace_b = client.post("/api/workspaces", headers=auth_headers, json={"name": f"{name} B"}).json()
+    resource = client.post(
+        f"/api/workspaces/{workspace_a['id']}/resources",
+        headers=auth_headers,
+        json={
+            "name": name,
+            "type": "server",
+            "hostname": "dup.example.test",
+            "description": "metadata survives",
+            "tags": "one,two",
+        },
+    ).json()
+    credential = client.post(
+        f"/api/resources/{resource['id']}/credentials",
+        headers=auth_headers,
+        json={"name": "Admin", "template": "password", "fields": {"username": "root", "password": "hunter2"}},
+    ).json()
+    note = client.post(
+        f"/api/resources/{resource['id']}/notes",
+        headers=auth_headers,
+        json={"title": "Runbook", "content": "secure note body"},
+    ).json()
+    uploaded_file = client.post(
+        f"/api/resources/{resource['id']}/files",
+        headers=auth_headers,
+        files={"upload": ("config.txt", b"duplicate me", "text/plain")},
+    ).json()
+    icon_upload = client.post(
+        f"/api/resources/{resource['id']}/icon",
+        headers=auth_headers,
+        files={"upload": ("icon.svg", b'<svg xmlns="http://www.w3.org/2000/svg"></svg>', "image/svg+xml")},
+    ).json()
+    return workspace_a, workspace_b, {**resource, "icon": icon_upload["icon"]}, credential, note, uploaded_file
+
+
+def _duplicate_resource(client, auth_headers, resource_id, workspace_id, name, **options):
+    payload = {
+        "name": name,
+        "destination_workspace_id": workspace_id,
+        "copy_credentials": True,
+        "copy_notes": True,
+        "copy_files": True,
+        "copy_icon": True,
+        "copy_tags": True,
+    }
+    payload.update(options)
+    return client.post(f"/api/resources/{resource_id}/duplicate", headers=auth_headers, json=payload)
+
+
+def test_duplicate_resource_inside_same_workspace(client, auth_headers):
+    workspace_a, _, source, credential, note, uploaded_file = _create_duplicate_source(client, auth_headers, "Same WS Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_a["id"], "Same WS Copy 2")
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["id"] != source["id"]
+    assert duplicate["workspace_id"] == workspace_a["id"]
+    assert duplicate["credential_count"] == 1
+    assert duplicate["note_count"] == 1
+    assert duplicate["file_count"] == 1
+    assert duplicate["icon"] != source["icon"]
+    assert duplicate["icon"].startswith("custom:")
+
+    assert client.get(f"/api/resources/{source['id']}", headers=auth_headers).json()["name"] == source["name"]
+    creds = client.get(f"/api/resources/{duplicate['id']}/credentials", headers=auth_headers).json()
+    assert creds[0]["id"] != credential["id"]
+    assert client.post(f"/api/credentials/{creds[0]['id']}/reveal", headers=auth_headers).json()["fields"]["password"] == "hunter2"
+    notes = client.get(f"/api/resources/{duplicate['id']}/notes", headers=auth_headers).json()
+    assert notes[0]["id"] != note["id"]
+    files = client.get(f"/api/resources/{duplicate['id']}/files", headers=auth_headers).json()
+    assert files[0]["id"] != uploaded_file["id"]
+    assert client.get(f"/api/files/{files[0]['id']}/download", headers=auth_headers).content == b"duplicate me"
+    audit = client.get(f"/api/resources/{duplicate['id']}/audit", headers=auth_headers).json()
+    assert audit[0]["detail"].startswith("Resource created by duplication")
+
+
+def test_duplicate_resource_into_another_workspace(client, auth_headers):
+    workspace_a, workspace_b, source, _, _, _ = _create_duplicate_source(client, auth_headers, "Other WS Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_b["id"], "Other WS Copy 2")
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["workspace_id"] == workspace_b["id"]
+    assert duplicate["id"] != source["id"]
+    original = client.get(f"/api/resources/{source['id']}", headers=auth_headers).json()
+    assert original["workspace_id"] == workspace_a["id"]
+
+
+def test_duplicate_resource_only_credentials(client, auth_headers):
+    workspace_a, _, source, credential, _, _ = _create_duplicate_source(client, auth_headers, "Cred Only Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_a["id"], "Cred Only Copy 2", copy_notes=False, copy_files=False, copy_icon=False, copy_tags=False)
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["credential_count"] == 1
+    assert duplicate["note_count"] == 0
+    assert duplicate["file_count"] == 0
+    assert duplicate["icon"] is None
+    creds = client.get(f"/api/resources/{duplicate['id']}/credentials", headers=auth_headers).json()
+    assert creds[0]["id"] != credential["id"]
+
+
+def test_duplicate_resource_only_notes(client, auth_headers):
+    workspace_a, _, source, _, note, _ = _create_duplicate_source(client, auth_headers, "Note Only Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_a["id"], "Note Only Copy 2", copy_credentials=False, copy_files=False, copy_icon=False)
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["credential_count"] == 0
+    assert duplicate["note_count"] == 1
+    assert duplicate["file_count"] == 0
+    notes = client.get(f"/api/resources/{duplicate['id']}/notes", headers=auth_headers).json()
+    assert notes[0]["id"] != note["id"]
+
+
+def test_duplicate_resource_only_files(client, auth_headers):
+    workspace_a, _, source, _, _, uploaded_file = _create_duplicate_source(client, auth_headers, "File Only Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_a["id"], "File Only Copy 2", copy_credentials=False, copy_notes=False, copy_icon=False)
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["credential_count"] == 0
+    assert duplicate["note_count"] == 0
+    assert duplicate["file_count"] == 1
+    files = client.get(f"/api/resources/{duplicate['id']}/files", headers=auth_headers).json()
+    assert files[0]["id"] != uploaded_file["id"]
+    assert client.get(f"/api/files/{files[0]['id']}/download", headers=auth_headers).content == b"duplicate me"
+
+
+def test_duplicate_resource_everything(client, auth_headers):
+    workspace_a, _, source, credential, note, uploaded_file = _create_duplicate_source(client, auth_headers, "Everything Copy")
+    resp = _duplicate_resource(client, auth_headers, source["id"], workspace_a["id"], "Everything Copy 2")
+    assert resp.status_code == 201
+    duplicate = resp.json()
+    assert duplicate["type"] == source["type"]
+    assert duplicate["hostname"] == source["hostname"]
+    assert duplicate["description"] == source["description"]
+    assert duplicate["tags"] == "one,two"
+    assert duplicate["credential_count"] == duplicate["note_count"] == duplicate["file_count"] == 1
+    assert duplicate["created_at"] != source["created_at"]
+    creds = client.get(f"/api/resources/{duplicate['id']}/credentials", headers=auth_headers).json()
+    notes = client.get(f"/api/resources/{duplicate['id']}/notes", headers=auth_headers).json()
+    files = client.get(f"/api/resources/{duplicate['id']}/files", headers=auth_headers).json()
+    assert creds[0]["id"] != credential["id"]
+    assert notes[0]["id"] != note["id"]
+    assert files[0]["id"] != uploaded_file["id"]
